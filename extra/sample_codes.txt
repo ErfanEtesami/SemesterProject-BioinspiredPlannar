@@ -1,0 +1,137 @@
+Pybullet:
+
+pb.setPhysicsEngineerParameter -> numSolverIterations
+pb.loadURDF -> pb.URDF_USE_SELF_COLLISION, pb.URDF_USE_SELF_COLLISION_INCLUDE_PARENT
+pb.changeDynamics -> contactDamping, contactStiffness, linearDamping, angularDamping,
+			jointDamping, maxJointVelocity, jointLowerLimit, jointUpperLimit, jointLimitForce
+pb.setJointMotorControlArray -> maxVelocity=1.0, targetVelocity=0.0
+pb.resetJointState -> targetVelocity=0.0
+
+--------------------------------------------------------------------------------
+Sample code:
+
+pb.setJointMotorControl2(bodyUniqueId=robot.robot_id, jointIndex=robot.fr_hip, controlMode=pb.POSITION_CONTROL,
+                         targetPosition=np.pi/4)
+pb.setJointMotorControl2(bodyUniqueId=robot.robot_id, jointIndex=robot.fr_knee, controlMode=pb.POSITION_CONTROL,
+                         targetPosition=np.pi/4)
+
+
+x_traj_sw_crr_front = x_traj_sw_org; z_traj_sw_crr_front = z_traj_sw_org
+vx_traj_sw_crr_front = vx_traj_sw_org; vz_traj_sw_crr_front = vz_traj_sw_org
+flag_end_t_st_front = 0
+x_traj_sw_crr_back = x_traj_sw_org; z_traj_sw_crr_back = z_traj_sw_org
+vx_traj_sw_crr_back = vx_traj_sw_org; vz_traj_sw_crr_back = vz_traj_sw_org
+flag_end_t_st_back = 0
+
+st_x_front = traj_sw_x[0]; st_vx_front = traj_sw_vx[0]; st_z_front = traj_sw_z[0]; st_vz_front = traj_sw_vz[0]
+st_x_back = traj_sw_x[0]; st_vx_back = traj_sw_vx[0]; st_z_back = traj_sw_z[0]; st_vz_back = traj_sw_vz[0]
+sw_x_front = traj_sw_x; sw_vx_front = traj_sw_vx; sw_z_front = traj_sw_z; sw_vz_front = traj_sw_vz
+sw_x_back = traj_sw_x; sw_vx_back = traj_sw_vx; sw_z_back = traj_sw_z; sw_vz_back = traj_sw_vz
+
+if flag_update_t_st == 1:
+    # t_air = (t_sw-t_st)/2; t_stride = t_st+t_sw
+    t_st_array = np.arange(0, t_st, t_step)
+    t_alpha_z = t_st*0.3; t_alpha_x = t_st*0.5
+    alpha_cnt_z_front = (m*g*t_stride)/(2*0.7*t_st); alpha_cnt_z_back = alpha_cnt_z_front
+    alpha_cnt_x_front = -alpha_cnt_z_front*ratio_cnt_xz; alpha_cnt_x_back = -alpha_cnt_x_front
+    cnt_z_front = control.gen_cnt(t_st, t_alpha_z, t_st_array, alpha_cnt_z_front*beta_cnt_z_1,
+                                  alpha_cnt_z_front*beta_cnt_z_2)
+    cnt_z_back = control.gen_cnt(t_st, t_alpha_z, t_st_array, alpha_cnt_z_back*beta_cnt_z_1,
+                                 alpha_cnt_z_back*beta_cnt_z_2)
+    cnt_x_front = control.gen_cnt(t_st, t_alpha_tau, t_st_array, alpha_cnt_x_front*beta_cnt_tau_1,
+                                  alpha_cnt_x_front*beta_cnt_tau_2)
+    cnt_x_back = control.gen_cnt(t_st, t_alpha_tau, t_st_array, alpha_cnt_x_back*beta_cnt_tau_1,
+                                 alpha_cnt_x_back*beta_cnt_tau_2)
+    flag_update_t_st = 0
+
+x_st_d = x_traj_sw_crr_front[0]; z_st_d = z_traj_sw_crr_front[0]
+vx_st_d = vx_traj_sw_crr_front[0]; vz_st_d = vz_traj_sw_crr_front[0]
+x_st_d = x_traj_sw_crr_back[0]; z_st_d = z_traj_sw_crr_back[0]
+vx_st_d = vx_traj_sw_crr_back[0]; vz_st_d = vz_traj_sw_crr_back[0]
+
+print(x_fl, x_body_fl, x_fr, x_body_fr, x_bl, x_body_bl, x_br, x_body_br)
+print(z_fl, z_body_fl, z_fr, z_body_fr, z_bl, z_body_bl, z_br, z_body_br)
+
+def gen_traj_sw_crr(s_sw, pos_f, traj_sw_mdf):
+    s_crr = np.minimum(2*s_sw, 1)
+    alpha = pos_f-traj_sw_mdf[0]
+    # beta = [alpha, alpha, 0, 0]
+    beta = [alpha, alpha, -3*alpha, 5*alpha]
+    coeffs = gen_bezier_poly(beta)
+    h_crr = np.zeros(len(s_crr))
+    for i in range(int(len(s_crr)*0.45)):
+        for j in range(len(coeffs)):
+            h_crr[i] = h_crr[i] + coeffs[j] * (s_crr[i]**j)
+    traj_sw_crr = traj_sw_mdf + h_crr
+    return traj_sw_crr
+
+def calc_action_init(fb_tot_x, fb_tot_z):
+    action_x = fb_tot_x
+    action_z = fb_tot_z
+    return np.array([[action_x], [action_z]])
+
+
+def apply_init(robot, mode_leg, x_l, z_l, vx_l, vz_l, x_r, z_r, vx_r, vz_r, jac_l, jac_r, th, wth,
+               x_d, vx_d, z_d, vz_d, th_d, wth_d, torque_sat):
+    fb_l_tot_x, fb_l_tot_z, fb_l_tot_th, fb_l_x_p, fb_l_x_d, fb_l_z_p, fb_l_z_d, fb_l_th_p, fb_l_th_d = \
+        gen_fb(robot, 1, x_l, x_d, vx_l, vx_d, z_l, z_d, vz_l, vz_d, th, th_d, wth, wth_d)
+    fb_r_tot_x, fb_r_tot_z, fb_r_tot_th, fb_r_x_p, fb_r_x_d, fb_r_z_p, fb_r_z_d, fb_r_th_p, fb_r_th_d = \
+        gen_fb(robot, 1, x_r, x_d, vx_r, vx_d, z_r, z_d, vz_r, vz_d, th, th_d, wth, wth_d)
+    action_l = calc_action_init(fb_l_tot_x, fb_l_tot_z)
+    action_r = calc_action_init(fb_r_tot_x, fb_r_tot_z)
+    torques = calc_torques(jac_l, action_l, jac_r, action_r, torque_sat)
+    apply_torques(robot, mode_leg, torques)
+    return fb_l_tot_x, fb_l_tot_z, fb_l_tot_th, fb_l_x_p, fb_l_x_d, fb_l_z_p, fb_l_z_d, fb_l_th_p, fb_l_th_d, \
+           fb_r_tot_x, fb_r_tot_z, fb_r_tot_th, fb_r_x_p, fb_r_x_d, fb_r_z_p, fb_r_z_d, fb_r_th_p, fb_r_th_d, \
+           action_l[0], action_l[1], action_r[0], action_r[1], \
+           torques[0], torques[1], torques[2], torques[3]
+
+
+def calc_action_st(x_body, z_body, cnt_x, cnt_z, fb_tot_x, fb_tot_z, fb_tot_th, afb, mu, flag_clamp_x_force):
+    action_x = cnt_x + fb_tot_x + fb_tot_th/z_body
+    action_z = cnt_z + afb*fb_tot_z + fb_tot_th/x_body
+    if flag_clamp_x_force == 1:
+        action_x = clamp_x_force(action_x, action_z, mu)
+    return np.array([[action_x], [action_z]])
+
+
+def apply_st(robot, mode_leg, x_l, z_l, vx_l, vz_l, x_r, z_r, vx_r, vz_r, jac_l, jac_r, th, wth,
+             x_body_l, x_body_r, z_body_l, z_body_r, x_d, vx_d, z_d, vz_d, th_d, wth_d,
+             cnt_x_l, cnt_x_r, cnt_z_l, cnt_z_r, torque_sat, afb, mu, flag_clamp_x_force):
+    fb_l_tot_x, fb_l_tot_z, fb_l_tot_th, fb_l_x_p, fb_l_x_d, fb_l_z_p, fb_l_z_d, fb_l_th_p, fb_l_th_d = \
+        gen_fb(robot, 2, x_l, x_d, vx_l, vx_d, z_l, z_d, vz_l, vz_d, th, th_d, wth, wth_d)
+    fb_r_tot_x, fb_r_tot_z, fb_r_tot_th, fb_r_x_p, fb_r_x_d, fb_r_z_p, fb_r_z_d, fb_r_th_p, fb_r_th_d = \
+        gen_fb(robot, 2, x_r, x_d, vx_r, vx_d, z_r, z_d, vz_r, vz_d, th, th_d, wth, wth_d)
+    action_l = calc_action_st(x_body_l, z_body_l, cnt_x_l, cnt_z_l, fb_l_tot_x, fb_l_tot_z, fb_l_tot_th,
+                              afb, mu, flag_clamp_x_force)
+    action_r = calc_action_st(x_body_r, z_body_r, cnt_x_r, cnt_z_r, fb_r_tot_x, fb_r_tot_z, fb_r_tot_th,
+                              afb, mu, flag_clamp_x_force)
+    torques = calc_torques(jac_l, action_l, jac_r, action_r, torque_sat)
+    apply_torques(robot, mode_leg, torques)
+    return fb_l_tot_x, fb_l_tot_z, fb_l_tot_th, fb_l_x_p, fb_l_x_d, fb_l_z_p, fb_l_z_d, fb_l_th_p, fb_l_th_d, \
+           fb_r_tot_x, fb_r_tot_z, fb_r_tot_th, fb_r_x_p, fb_r_x_d, fb_r_z_p, fb_r_z_d, fb_r_th_p, fb_r_th_d, \
+           action_l[0], action_l[1], action_r[0], action_r[1], \
+           torques[0], torques[1], torques[2], torques[3]
+
+
+def calc_action_sw(fb_tot_x, fb_tot_z):
+    action_x = fb_tot_x
+    action_z = fb_tot_z
+    return np.array([[action_x], [action_z]])
+
+
+def apply_sw(robot, mode_leg, x_l, z_l, vx_l, vz_l, x_r, z_r, vx_r, vz_r, jac_l, jac_r,
+             th, wth, x_d, vx_d, z_d, vz_d, th_d, wth_d, torque_sat):
+    fb_l_tot_x, fb_l_tot_z, fb_l_tot_th, fb_l_x_p, fb_l_x_d, fb_l_z_p, fb_l_z_d, fb_l_th_p, fb_l_th_d = \
+        gen_fb(robot, 3, x_l, x_d, vx_l, vx_d, z_l, z_d, vz_l, vz_d, th, th_d, wth, wth_d)
+    fb_r_tot_x, fb_r_tot_z, fb_r_tot_th, fb_r_x_p, fb_r_x_d, fb_r_z_p, fb_r_z_d, fb_r_th_p, fb_r_th_d = \
+        gen_fb(robot, 3, x_r, x_d, vx_r, vx_d, z_r, z_d, vz_r, vz_d, th, th_d, wth, wth_d)
+    action_l = calc_action_sw(fb_l_tot_x, fb_l_tot_z)
+    action_r = calc_action_sw(fb_r_tot_x, fb_r_tot_z)
+    torques = calc_torques(jac_l, action_l, jac_r, action_r, torque_sat)
+    apply_torques(robot, mode_leg, torques)
+    return fb_l_tot_x, fb_l_tot_z, fb_l_tot_th, fb_l_x_p, fb_l_x_d, fb_l_z_p, fb_l_z_d, fb_l_th_p, fb_l_th_d, \
+           fb_r_tot_x, fb_r_tot_z, fb_r_tot_th, fb_r_x_p, fb_r_x_d, fb_r_z_p, fb_r_z_d, fb_r_th_p, fb_r_th_d, \
+           action_l[0], action_l[1], action_r[0], action_r[1], \
+           torques[0], torques[1], torques[2], torques[3]
+

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot name="solo_single" xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor">
+
+  <material name="grey">
+    <color rgba="0.8 0.8 0.8 1.0"/>
+  </material>
+
+  <link name="world">
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0.2125" ixy="-0.005" ixz="0.0225" iyy="0.205" iyz="0.045" izz="0.0125"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </inertial>
+  </link>
+
+  <joint name="vertical" type="prismatic">
+    <parent link="world"/>
+    <child link="base"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-10.0" upper="10.0" velocity="1000.0"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <link name="base">
+    <inertial>
+      <origin xyz="0 0 0.00035767" rpy="0 0 0"/>
+      <mass value="0.00693606"/>
+      <inertia ixx="0.00000057" ixy="0.0" ixz="0.0" iyy="0.00000084" iyz="0.0" izz="0.00000053"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/stl/with_foot/solo_foot.stl"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/stl/with_foot/solo_foot.stl"/>
+      </geometry>
+      <material name="grey"/>
+    </collision>
+    <contact>
+      <lateral_friction value="1.0"/>
+      <restitution value="0.5"/>
+    </contact>
+  </link>
+
+  <joint name="hip" type="revolute">
+    <parent link="base"/>
+    <child link="upper_leg"/>
+    <limit effort="2.7" lower="-3.141593" upper="3.141593" velocity="1.0"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <link name="upper_leg">
+    <inertial>
+      <origin xyz="0.00001377 0.01935853 -0.07870700" rpy="0 0 0"/>
+      <mass value="0.14853845"/>
+      <inertia ixx="0.00041107" ixy="0.0" ixz="0.0" iyy="0.00041193" iyz="0.00004671" izz="0.00003024"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/stl/with_foot/solo_upper_leg_left_side.stl"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/stl/with_foot/solo_upper_leg_left_side.stl"/>
+      </geometry>
+      <material name="grey"/>
+    </collision>
+    <contact>
+      <lateral_friction value="1.0"/>
+      <restitution value="0.5"/>
+    </contact>
+  </link>
+
+  <joint name="knee" type="revolute">
+    <parent link="upper_leg"/>
+    <child link="lower_leg"/>
+    <limit effort="2.7" lower="-3.141593" upper="3.141593" velocity="1.0"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0.03745 -0.16" rpy="0 0 0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <link name="lower_leg">
+    <inertial>
+      <origin xyz="0.0 0.00787644 -0.08928215" rpy="0 0 0"/>
+      <mass value="0.03070001"/>
+      <inertia ixx="0.00012024" ixy="0.0" ixz="0.0" iyy="0.00012029" iyz="0.00000305" izz="0.00000216"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/stl/with_foot/solo_lower_leg_left_side.stl"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/stl/with_foot/solo_lower_leg_left_side.stl"/>
+      </geometry>
+      <material name="grey"/>
+    </collision>
+    <contact>
+      <lateral_friction value="1.0"/>
+      <restitution value="0.5"/>
+    </contact>
+  </link>
+
+  <joint name="heel" type="fixed">
+    <parent link="lower_leg"/>
+    <child link="foot"/>
+    <origin xyz="0 0.008 -0.16" rpy="0 0 0"/>
+  </joint>
+
+  <link name="foot">
+    <inertial>
+      <origin xyz="0 0 0.00035767" rpy="0 0 0"/>
+      <mass value="0.00693606"/>
+      <inertia ixx="0.00000057" ixy="0.0" ixz="0.0" iyy="0.00000084" iyz="0.0" izz="0.00000053"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/stl/with_foot/solo_foot.stl"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/stl/with_foot/solo_foot.stl"/>
+      </geometry>
+      <material name="grey"/>
+    </collision>
+    <contact>
+      <lateral_friction value="1.0"/>
+      <restitution value="0.5"/>
+    </contact>
+  </link>
+
+</robot>
