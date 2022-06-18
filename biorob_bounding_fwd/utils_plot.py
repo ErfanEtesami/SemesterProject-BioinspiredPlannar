@@ -30,7 +30,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
               mech_pow_hip_br_axis, mech_pow_knee_br_axis, mech_pow_tot_br_axis,
               x_traj_sw_org, z_traj_sw_org):
     # joint torques
-    fig, gph = plt.subplots(2, 2, constrained_layout=True, figsize=(12, 12))
+    fig, gph = plt.subplots(2, 2, constrained_layout=True, figsize=(12, 6))
     gph[0, 0].plot(t_axis, torque_fl_hip_axis)
     gph[0, 0].plot(t_axis, torque_fl_knee_axis)
     gph[0, 0].axhline(y=torque_sat, c='r')
@@ -73,7 +73,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[1, 1].legend(['hip', 'knee'])
     fig.savefig('./plots/biorob_bounding_fwd_01.png')
     # total force (action) + contact force + feedback  + pybullet measured forces in x and z directions
-    fig, gph = plt.subplots(4, 4, constrained_layout=True, figsize=(24, 24))
+    fig, gph = plt.subplots(4, 4, constrained_layout=True, figsize=(24, 12))
     gph[0, 0].plot(t_axis, action_x_fl_axis)
     gph[0, 0].plot(t_axis, cnt_x_fl_axis, '--')
     gph[0, 0].plot(t_axis, fb_tot_x_fl_axis, '--')
@@ -184,7 +184,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[3, 3].set_ylabel('F (N)')
     fig.savefig('./plots/biorob_bounding_fwd_02.png')
     # CoM coordinates
-    fig, gph = plt.subplots(4, 2, constrained_layout=True, figsize=(24, 12))
+    fig, gph = plt.subplots(4, 2, constrained_layout=True, figsize=(12, 12))
     gph[0, 0].plot(t_axis, x_com_axis)
     gph[0, 0].grid()
     gph[0, 0].set_title('x_com vs t')
@@ -369,7 +369,8 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[3, 2].set_ylabel('feedback force (N)')
     gph[3, 2].legend(['proportional', 'derivative', 'total'])
     fig.savefig('./plots/biorob_bounding_fwd_05.png')
-    fig, gph = plt.subplots(2, 2, constrained_layout=True, figsize=(12, 12))
+    # mechanical power
+    fig, gph = plt.subplots(2, 2, constrained_layout=True, figsize=(12, 6))
     gph[0, 0].plot(t_axis, mech_pow_hip_fl_axis)
     gph[0, 0].plot(t_axis, mech_pow_knee_fl_axis)
     gph[0, 0].plot(t_axis, mech_pow_tot_fl_axis)
@@ -404,7 +405,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[1, 1].legend(['hip', 'knee', 'total'])
     fig.savefig('./plots/biorob_bounding_fwd_06.png')
     # toe trajectory
-    fig, gph = plt.subplots(4, 5, constrained_layout=True, figsize=(24, 30))
+    fig, gph = plt.subplots(4, 5, constrained_layout=True, figsize=(30, 12))
     gph[0, 0].plot(t_axis, x_fl_axis)
     gph[0, 0].set_title('front left leg - toe x trajectory')
     gph[0, 0].set_xlabel('t (s)')
@@ -535,7 +536,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
 
 def plot_traj_sw(beta_sw_x, beta_sw_z, t_sw_array, x_traj_sw, z_traj_sw, vx_traj_sw, vz_traj_sw):
     # swing trajectory
-    fig, gph = plt.subplots(3, 2, constrained_layout=True, figsize=(18, 12))
+    fig, gph = plt.subplots(3, 2, constrained_layout=True, figsize=(12, 12))
     gph[0, 0].plot(x_traj_sw, z_traj_sw)
     gph[0, 0].invert_yaxis()
     gph[0, 0].axvline(x=0, c='k')
@@ -591,7 +592,7 @@ def plot_traj_sw(beta_sw_x, beta_sw_z, t_sw_array, x_traj_sw, z_traj_sw, vx_traj
 
 def plot_traj_sw_crr(x_traj_sw_crr_front_axis, x_traj_sw_corr_back_axis,
                      z_traj_sw_corr_front_axis, z_traj_sw_corr_back_axis):
-    fig, gph = plt.subplots(1, 2, constrained_layout=True, figsize=(6, 12))
+    fig, gph = plt.subplots(1, 2, constrained_layout=True, figsize=(12, 6))
     gph[0].plot(x_traj_sw_crr_front_axis, z_traj_sw_corr_front_axis)
     gph[0].invert_yaxis()
     gph[0].axvline(x=0, c='k')
@@ -640,7 +641,7 @@ def plot_cnt(m, g, t_st_front_array, t_st_back_array, cnt_x_front, cnt_x_back, c
 
 
 def plot_afb(t_st_front_array, t_st_back_array, afb_front, afb_back):
-    fig, gph = plt.subplots(1, 2, constrained_layout=True, figsize=(6, 12))
+    fig, gph = plt.subplots(1, 2, constrained_layout=True, figsize=(12, 6))
     gph[0].plot(t_st_front_array, afb_front)
     gph[0].grid()
     gph[0].set_title('front legs - feedback activation')
@@ -673,7 +674,7 @@ def plot_v_avg(t_axis, v_avg_axis, v_d):
     gph.plot(t_axis, v_avg_axis)
     gph.axhline(y=v_d, c='r')
     gph.grid()
-    gph.set_title('average velocity (toe w.r.t. hip)')
+    gph.set_title('average velocity (toe w.r.t. hip) during stance')
     gph.set_xlabel('t (s)')
     gph.set_ylabel('v (m/s)')
     fig.savefig('./plots/biorob_bounding_fwd_v_avg_01.png')
@@ -683,7 +684,7 @@ def plot_v_avg(t_axis, v_avg_axis, v_d):
 def plot_traj_sw_d(t_axis,
                    x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
                    vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis):
-    fig, gph = plt.subplots(3, 4, constrained_layout=True, figsize=(18, 24))
+    fig, gph = plt.subplots(3, 4, constrained_layout=True, figsize=(24, 12))
     gph[0, 0].plot(x_sw_d_front_axis, z_sw_d_front_axis)
     gph[0, 0].invert_yaxis()
     gph[0, 0].axvline(x=0, c='k')

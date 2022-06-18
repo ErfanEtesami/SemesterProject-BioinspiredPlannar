@@ -152,7 +152,6 @@ def calc_torques(jac_l, force_l, jac_r, force_r, torque_sat):
     torques_l = np.matmul(np.transpose(jac_l), force_l)
     torques_r = np.matmul(np.transpose(jac_r), force_r)
     torques = np.vstack((torques_l, torques_r))
-    print(torques)
     for j in range(len(torques)):
         if abs(torques[j]) > torque_sat:
             torques[j] = torque_sat * (torques[j]/abs(torques[j]))
@@ -198,7 +197,7 @@ def apply_control(robot, mode_leg, mode_control,
     # clamp the x force profile if required
     if flag_clamp_x_force == 1:
         action_x_l = clamp_x_force(action_x_l, action_z_l, mu)
-        action_z_l = clamp_x_force(action_x_r, action_z_r, mu)
+        action_x_r = clamp_x_force(action_x_r, action_z_r, mu)
     # calculate the joint torques and apply them
     action_l = np.array([[action_x_l], [action_z_l]])
     action_r = np.array([[action_x_r], [action_z_r]])

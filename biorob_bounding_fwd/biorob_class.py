@@ -10,7 +10,7 @@ class BioRob:
                  kp_x_sw, kd_x_sw, kp_z_sw, kd_z_sw, kp_th_sw, kd_th_sw,
                  k_st,
                  start_pos, start_orn,
-                 flag_fixed_base):
+                 flag_fix_base):
         # --- general parameters --- #
         self.plane_id = plane_id
         self.m = m
@@ -43,12 +43,12 @@ class BioRob:
         self.kd_th_sw = kd_th_sw
         self.k_st = k_st
         # --- flags --- #
-        self.flag_fixed_base = flag_fixed_base
+        self.flag_fix_base = flag_fix_base
         # --- robot parameters --- #
         self.robot_id = pb.loadURDF(fileName='./model/biorob.urdf',
                                     basePosition=self.start_pos,
                                     baseOrientation=pb.getQuaternionFromEuler(self.start_orn),
-                                    useFixedBase=self.flag_fixed_base,
+                                    useFixedBase=self.flag_fix_base,
                                     flags=pb.URDF_USE_INERTIA_FROM_FILE & pb.URDF_MAINTAIN_LINK_ORDER)
         # link lengths
         self.lengths = lengths

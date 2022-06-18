@@ -17,14 +17,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_body.stl"/>
+        <mesh filename="./meshes/solo_body.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_body.stl"/>
+        <mesh filename="./meshes/solo_body.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -54,14 +54,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_upper_leg_left_side.stl"/>
+        <mesh filename="./meshes/solo_upper_leg_left_side.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_upper_leg_left_side.stl"/>
+        <mesh filename="./meshes/solo_upper_leg_left_side.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -89,14 +89,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_lower_leg_left_side.stl"/>
+        <mesh filename="./meshes/solo_lower_leg_left_side.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_lower_leg_left_side.stl"/>
+        <mesh filename="./meshes/solo_lower_leg_left_side.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -123,14 +123,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_foot.stl"/>
+        <mesh filename="./meshes/solo_foot.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_foot.stl"/>
+        <mesh filename="./meshes/solo_foot.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -160,14 +160,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_upper_leg_right_side.stl"/>
+        <mesh filename="./meshes/solo_upper_leg_right_side.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_upper_leg_right_side.stl"/>
+        <mesh filename="./meshes/solo_upper_leg_right_side.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -195,14 +195,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_lower_leg_right_side.stl"/>
+        <mesh filename="./meshes/solo_lower_leg_right_side.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_lower_leg_right_side.stl"/>
+        <mesh filename="./meshes/solo_lower_leg_right_side.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -229,14 +229,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_foot.stl"/>
+        <mesh filename="./meshes/solo_foot.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_foot.stl"/>
+        <mesh filename="./meshes/solo_foot.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -266,14 +266,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_upper_leg_left_side.stl"/>
+        <mesh filename="./meshes/solo_upper_leg_left_side.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_upper_leg_left_side.stl"/>
+        <mesh filename="./meshes/solo_upper_leg_left_side.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -301,14 +301,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_lower_leg_left_side.stl"/>
+        <mesh filename="./meshes/solo_lower_leg_left_side.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_lower_leg_left_side.stl"/>
+        <mesh filename="./meshes/solo_lower_leg_left_side.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -335,14 +335,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_foot.stl"/>
+        <mesh filename="./meshes/solo_foot.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_foot.stl"/>
+        <mesh filename="./meshes/solo_foot.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -372,14 +372,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_upper_leg_right_side.stl"/>
+        <mesh filename="./meshes/solo_upper_leg_right_side.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_upper_leg_right_side.stl"/>
+        <mesh filename="./meshes/solo_upper_leg_right_side.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -407,14 +407,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_lower_leg_right_side.stl"/>
+        <mesh filename="./meshes/solo_lower_leg_right_side.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_lower_leg_right_side.stl"/>
+        <mesh filename="./meshes/solo_lower_leg_right_side.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -441,14 +441,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_foot.stl"/>
+        <mesh filename="./meshes/solo_foot.stl"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/solo_foot.stl"/>
+        <mesh filename="./meshes/solo_foot.stl"/>
       </geometry>
       <material name="grey"/>
     </collision>

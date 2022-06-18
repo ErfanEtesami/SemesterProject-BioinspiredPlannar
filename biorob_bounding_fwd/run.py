@@ -52,22 +52,22 @@ import utils_plot as plot
 
 
 # --- flags --- #
-flag_fixed_base = 0                 # 1: fix the base on air or not (0)
+flag_fix_base = 0                   # 1: fix the base on air or not (0)
 flag_change_robot_dynamics = 1      # 1: change dynamics of the robot or not (0)
 flag_change_plane_dynamics = 1      # 1: change dynamics of the plane or not (0)
-flag_afb = 1                        # 1: use feedback activation such that F_z > 0 or not (0)
+flag_use_afb = 1                    # 1: use feedback activation such that F_z > 0 or not (0)
 flag_clamp_x_force = 0              # 1: clamp x force by |F_x| <= mu * |F_z| or not (0)
 flag_fwd_kin = 0                    # 0: use direct forward kinematics or the equivalent one (1)
-flag_update_t_st = 0                # 1: update stance time or not (0)
-flag_update_traj_sw = 0             # 1: update swing trajectory or not (0)
+flag_update_t_st = 1                # 1: update stance time or not (0)
+flag_update_traj_sw = 1             # 1: update swing trajectory or not (0)
 flag_record_video = 0               # 1: record video or not (0)
 flag_draw_traj = 0                  # 1: draw trajectory in gui or not (0)
 draw_step = 50
 flag_slow_motion = 0                # 1: slow down the simulation or not (0)
 t_slow_motion = 10*1e-3
 # check flag inputs
-verbose.check_flags([flag_fixed_base, flag_change_robot_dynamics, flag_change_plane_dynamics,
-                     flag_afb, flag_clamp_x_force, flag_fwd_kin, flag_update_t_st,
+verbose.check_flags([flag_fix_base, flag_change_robot_dynamics, flag_change_plane_dynamics,
+                     flag_use_afb, flag_clamp_x_force, flag_fwd_kin, flag_update_t_st,
                      flag_update_traj_sw, flag_record_video, flag_draw_traj, flag_slow_motion])
 # --- time constants --- #
 t_step = 1*1e-3
@@ -88,7 +88,7 @@ mu_robot = 1
 rest_robot = 0.5
 mu = mu_plane * mu_robot
 # --- start and initial configuration --- #
-if flag_fixed_base == 1:
+if flag_fix_base == 1:
     start_pos = [0, 0, 0.30+0.1]
 else:
     start_pos = [0, 0, 0.30+0.02]
@@ -102,7 +102,7 @@ wth_init = 0
 # --- control gains --- #
 # updating t_st
 k_st = 0.1
-if flag_fixed_base == 0:
+if flag_fix_base == 0:
     # initialization
     kp_x_init = 100
     kd_x_init = 5
@@ -124,7 +124,7 @@ if flag_fixed_base == 0:
     kd_z_sw = 5
     kp_th_sw = 0
     kd_th_sw = 0
-elif flag_fixed_base == 1:
+elif flag_fix_base == 1:
     # initialization
     kp_x_init = 100
     kd_x_init = 5
@@ -192,10 +192,10 @@ cnt_x_back = gen_curves.gen_cnt(t_st_back, t_alpha_x_back, t_st_back_array,
                                 alpha_cnt_x_back*beta_cnt_x_1, alpha_cnt_x_back*beta_cnt_x_2)
 plot.plot_cnt(m, g, t_st_front_array, t_st_back_array, cnt_x_front, cnt_x_back, cnt_z_front, cnt_z_back)
 # --- generate feedback activation --- #
-if flag_afb == 0:
+if flag_use_afb == 0:
     afb_front = np.ones(len(t_st_front_array))
     afb_back = np.ones(len(t_st_back_array))
-elif flag_afb == 1:
+elif flag_use_afb == 1:
     t_alpha_1_front = 0.2*t_st_front
     t_alpha_2_front = 0.8*t_st_front
     t_alpha_1_back = 0.2*t_st_back
@@ -414,7 +414,7 @@ robot = biorob_class.BioRob(plane_id=plane_id,
                             kp_th_sw=kp_th_sw, kd_th_sw=kd_th_sw,
                             k_st=k_st,
                             start_pos=start_pos, start_orn=start_orn,
-                            flag_fixed_base=flag_fixed_base)
+                            flag_fix_base=flag_fix_base)
 # --- enable torque sensors in actuated joints --- #
 get_info.enable_torque_sensors(robot)
 # --- change plane and robot dynamics --- #
@@ -437,16 +437,12 @@ j = 0
 jj = 0
 t = 0
 t_count = 0
-t_td_count_front = 0
-t_td_count_back = 0
 flag_update_t_st_front = 0
 flag_update_t_st_back = 0
 flag_end_t_st_front = 0
 flag_end_t_st_back = 0
 t_td_front = 0
 t_td_back = 0
-flag_in_t_sw_front = 0
-flag_in_t_sw_back = 0
 while True:
     # --- reset values --- #
     fb_tot_x_fl = 0
@@ -529,7 +525,7 @@ while True:
     afb_f = 1
     afb_b = 1
     # --- update camera position --- #
-    if flag_fixed_base == 0 and t >= t_init:
+    if flag_fix_base == 0 and t >= t_init:
         pb.resetDebugVisualizerCamera(0.8, 145, -5, pb.getBasePositionAndOrientation(robot.robot_id)[0])
     # --- extract coordinates and states --- #
     x_com, y_com, z_com, th_com, vx_com, vz_com, wth_com = get_info.get_com_crds(robot)
@@ -594,7 +590,7 @@ while True:
                                   x_body_fl, x_body_fr, z_body_fl, z_body_fr,
                                   x_st_d, vx_st_d, z_st_d, vz_st_d, th_st_d, wth_st_d,
                                   cnt_x_fl, cnt_x_fr, cnt_z_fl, cnt_z_fr,
-                                  torque_sat, afb_front, mu, flag_clamp_x_force)
+                                  torque_sat, afb_f, mu, flag_clamp_x_force)
         i = i + 1
         if i > len(t_st_front_array)-1:         # end of stance: switch to swing
             sm_front = 3
@@ -618,13 +614,13 @@ while True:
                                   x_body_fl, x_body_fr, z_body_fl, z_body_fr,
                                   x_sw_d_f, vx_sw_d_f, z_sw_d_f, vz_sw_d_f, th_sw_d, wth_sw_d,
                                   cnt_x_fl, cnt_x_fr, cnt_z_fl, cnt_z_fr,
-                                  torque_sat, afb_front, mu, flag_clamp_x_force)
+                                  torque_sat, afb_f, mu, flag_clamp_x_force)
         ii = ii + 1
         if ii > len(t_sw_array)-1:                                  # end of swing: switch to stance
             sm_front = 2
             i = 0
             ii = 0
-        if flag_fixed_base == 0 and control.check_td(robot, 1):     # end of swing: switch to stance
+        if flag_fix_base == 0 and control.check_td(robot, 1):     # end of swing: switch to stance
             sm_front = 2
             i = 0
             ii = 0
@@ -678,7 +674,7 @@ while True:
             sm_back = 2
             j = 0
             jj = 0
-        if flag_fixed_base == 0 and control.check_td(robot, 2):     # end of swing: switch to stance
+        if flag_fix_base == 0 and control.check_td(robot, 2):     # end of swing: switch to stance
             sm_back = 2
             j = 0
             jj = 0
@@ -736,9 +732,9 @@ while True:
                                          alpha_cnt_z_front*beta_cnt_z_1, alpha_cnt_z_front*beta_cnt_z_2)
         cnt_x_front = gen_curves.gen_cnt(t_st_front, t_alpha_x_front, t_st_front_array,
                                          alpha_cnt_x_front*beta_cnt_x_1, alpha_cnt_x_front*beta_cnt_x_2)
-        if flag_afb == 0:
+        if flag_use_afb == 0:
             afb_front = np.ones(len(t_st_front_array))
-        elif flag_afb == 1:
+        elif flag_use_afb == 1:
             t_alpha_1_front = 0.2*t_st_front
             t_alpha_2_front = 0.8*t_st_front
             afb_front = gen_curves.gen_afb(t_st_front, t_alpha_1_front, t_alpha_2_front, t_st_front_array,
@@ -756,9 +752,9 @@ while True:
                                         alpha_cnt_z_back*beta_cnt_z_1, alpha_cnt_z_back*beta_cnt_z_2)
         cnt_x_back = gen_curves.gen_cnt(t_st_back, t_alpha_x_back, t_st_back_array,
                                         alpha_cnt_x_back*beta_cnt_x_1, alpha_cnt_x_back*beta_cnt_x_2)
-        if flag_afb == 0:
+        if flag_use_afb == 0:
             afb_back = np.ones(len(t_st_back_array))
-        elif flag_afb == 1:
+        elif flag_use_afb == 1:
             t_alpha_1_back = 0.2*t_st_back
             t_alpha_2_back = 0.8*t_st_back
             afb_back = gen_curves.gen_afb(t_st_back, t_alpha_1_back, t_alpha_2_back, t_st_back_array,
@@ -919,7 +915,7 @@ while True:
                           x_com_axis[t_count-draw_step], x_com_axis[t_count],
                           y_com_axis[t_count-draw_step], y_com_axis[t_count],
                           z_com_axis[t_count-draw_step], z_com_axis[t_count],
-                          flag_fixed_base)
+                          flag_fix_base)
     # --- next step --- #
     pb.stepSimulation()
     if flag_slow_motion == 1:
@@ -975,9 +971,9 @@ plot.plot_traj_sw_crr(x_traj_sw_crr_front_axis, x_traj_sw_crr_back_axis,
                       z_traj_sw_crr_front_axis, z_traj_sw_crr_back_axis)
 plot.plot_t_st(t_axis, t_st_front_axis, t_st_back_axis)
 plot.plot_v_avg(t_axis, v_avg_axis, -v_d)
-plot.plot_sw_d(t_axis,
-               x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
-               vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis)
+plot.plot_traj_sw_d(t_axis,
+                    x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
+                    vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis)
 plot.plot_full(m, g, v_d, torque_sat, t_axis,
               x_com_axis, y_com_axis, z_com_axis, th_com_axis, vx_com_axis, vz_com_axis, wth_com_axis,
               fb_tot_x_fl_axis, fb_tot_z_fl_axis, fb_x_pd_fl_axis, fb_z_pd_fl_axis, fb_th_pd_fl_axis,

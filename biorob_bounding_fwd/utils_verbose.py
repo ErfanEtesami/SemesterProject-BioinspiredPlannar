@@ -32,8 +32,8 @@ def print_states(robot):
 
 def draw_traj(x_fl_1, x_fl_2, z_fl_1, z_fl_2, x_fr_1, x_fr_2, z_fr_1, z_fr_2,
               x_bl_1, x_bl_2, z_bl_1, z_bl_2, x_br_1, x_br_2, z_br_1, z_br_2,
-              x_com_1, x_com_2, y_com_1, y_com_2, z_com_1, z_com_2, flag_fixed_base):
-    if flag_fixed_base == 1:
+              x_com_1, x_com_2, y_com_1, y_com_2, z_com_1, z_com_2, flag_fix_base):
+    if flag_fix_base == 1:
         # relative coordinates of the hip joint w.r.t. the center of the base
         y = (87.5 + 14 + 37.45) / 1000
         x = (214 - 19.5) / 1000

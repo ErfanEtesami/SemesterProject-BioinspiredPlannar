@@ -29,7 +29,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/base.STL"/>
+        <mesh filename="./meshes/base.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -59,14 +59,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FL_thigh.STL"/>
+        <mesh filename="./meshes/FL_thigh.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FL_thigh.STL"/>
+        <mesh filename="./meshes/FL_thigh.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -94,14 +94,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FL_rod.STL"/>
+        <mesh filename="./meshes/FL_rod.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FL_rod.STL"/>
+        <mesh filename="./meshes/FL_rod.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -129,14 +129,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="FL_calf.STL"/>
+        <mesh filename="./meshes/FL_calf.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FL_calf.STL"/>
+        <mesh filename="./meshes/FL_calf.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -164,14 +164,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FL_foot.STL"/>
+        <mesh filename="./meshes/FL_foot.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FL_foot.STL"/>
+        <mesh filename="./meshes/FL_foot.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -201,14 +201,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FR_thigh.STL"/>
+        <mesh filename="./meshes/FR_thigh.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FR_thigh.STL"/>
+        <mesh filename="./meshes/FR_thigh.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -236,14 +236,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FR_rod.STL"/>
+        <mesh filename="./meshes/FR_rod.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FR_rod.STL"/>
+        <mesh filename="./meshes/FR_rod.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -271,14 +271,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_calf.STL"/>
+        <mesh filename="./meshes/BR_calf.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_calf.STL" />
+        <mesh filename="./meshes/BR_calf.STL" />
       </geometry>
     </collision>
     <contact>
@@ -306,14 +306,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FR_foot.STL"/>
+        <mesh filename="./meshes/FR_foot.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/FR_foot.STL"/>
+        <mesh filename="./meshes/FR_foot.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -343,14 +343,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BL_thigh.STL"/>
+        <mesh filename="./meshes/BL_thigh.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BL_thigh.STL"/>
+        <mesh filename="./meshes/BL_thigh.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -380,14 +380,14 @@
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh
-          filename="meshes/BL_rod.STL"/>
+          filename="./meshes/BL_rod.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BL_rod.STL"/>
+        <mesh filename="./meshes/BL_rod.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -415,14 +415,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BL_calf.STL"/>
+        <mesh filename="./meshes/BL_calf.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BL_calf.STL"/>
+        <mesh filename="./meshes/BL_calf.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -450,14 +450,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BL_foot.STL"/>
+        <mesh filename="./meshes/BL_foot.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BL_foot.STL"/>
+        <mesh filename="./meshes/BL_foot.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -487,14 +487,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_thigh.STL"/>
+        <mesh filename="./meshes/BR_thigh.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_thigh.STL"/>
+        <mesh filename="./meshes/BR_thigh.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -522,14 +522,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_rod.STL"/>
+        <mesh filename="./meshes/BR_rod.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_rod.STL"/>
+        <mesh filename="./meshes/BR_rod.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -558,14 +558,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_calf.STL"/>
+        <mesh filename="./meshes/BR_calf.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_calf.STL"/>
+        <mesh filename="./meshes/BR_calf.STL"/>
       </geometry>
     </collision>
     <contact>
@@ -593,14 +593,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_foot.STL"/>
+        <mesh filename="./meshes/BR_foot.STL"/>
       </geometry>
       <material name="color1"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/BR_foot.STL"/>
+        <mesh filename="./meshes/BR_foot.STL"/>
       </geometry>
     </collision>
     <contact>
