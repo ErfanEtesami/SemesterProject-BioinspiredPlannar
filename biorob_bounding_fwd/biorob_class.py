@@ -2,7 +2,8 @@ import pybullet as pb
 
 
 class BioRob:
-    def __init__(self, plane_id, m, g, lengths,
+    def __init__(self, plane_id,
+                 m, g, lengths, l_base,
                  mu_robot, rest_robot, mu_plane, rest_plane,
                  kp_x_init, kd_x_init, kp_z_init, kd_z_init, kp_th_init, kd_th_init,
                  kp_x_st, kd_x_st, kp_z_st, kd_z_st, kp_th_st, kd_th_st,
@@ -14,6 +15,7 @@ class BioRob:
         self.plane_id = plane_id
         self.m = m
         self.g = g
+        self.l_base = l_base
         self.mu_robot = mu_robot
         self.rest_robot = rest_robot
         self.mu_plane = mu_plane

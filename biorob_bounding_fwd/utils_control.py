@@ -98,7 +98,7 @@ def calc_fwd_kin_eqv(robot, q, vq):
     q3 = q2
     vq0 = vq[0]
     vq2 = vq[1]
-    vq3 = -vq2
+    vq3 = vq2
     # calculate equivalent leg length
     l = np.sqrt(robot.l_calf**2 + robot.l_foot2**2 + 2*robot.l_calf*robot.l_foot2*np.cos(q3))
     dl_dq3 = (-2*robot.l_calf*robot.l_foot2*np.sin(q3)) / (2*l)
@@ -138,9 +138,9 @@ def calc_fwd_kin(robot, flag_fwd_kin, q, vq):
     return x_l, vx_l, z_l, vz_l, jac_l, x_r, vx_r, z_r, vz_r, jac_r
 
 
-def gen_fb(robot, mode_control, x, x_d, vx, vx_d, z, z_d, vz, vz_d, th, th_d, wth, wth_d):
+def calc_fb(robot, mode_control, x, x_d, vx, vx_d, z, z_d, vz, vz_d, th, th_d, wth, wth_d):
     """
-    Generate the feedback.
+    Calculate the feedback.
     """
     if mode_control == 1:       # initialization
         kp_x = robot.kp_x_init
@@ -219,9 +219,9 @@ def apply_control(robot, mode_leg, mode_control,
     """
     # calculate feedback
     fb_x_pd_l, fb_x_p_l, fb_x_d_l, fb_z_pd_l, fb_z_p_l, fb_z_d_l, fb_th_pd_l, fb_th_p_l, fb_th_d_l = \
-        gen_fb(robot, mode_control, x_l, x_d, vx_l, vx_d, z_l, z_d, vz_l, vz_d, th, th_d, wth, wth_d)
+        calc_fb(robot, mode_control, x_l, x_d, vx_l, vx_d, z_l, z_d, vz_l, vz_d, th, th_d, wth, wth_d)
     fb_x_pd_r, fb_x_p_r, fb_x_d_r, fb_z_pd_r, fb_z_p_r, fb_z_d_r, fb_th_pd_r, fb_th_p_r, fb_th_d_r = \
-        gen_fb(robot, mode_control, x_r, x_d, vx_r, vx_d, z_r, z_d, vz_r, vz_d, th, th_d, wth, wth_d)
+        calc_fb(robot, mode_control, x_r, x_d, vx_r, vx_d, z_r, z_d, vz_r, vz_d, th, th_d, wth, wth_d)
     fb_tot_x_l = fb_x_pd_l + fb_th_pd_l/z_body_l
     fb_tot_z_l = afb*fb_z_pd_l + fb_th_pd_l/x_body_l
     fb_tot_x_r = fb_x_pd_r + fb_th_pd_r/z_body_r

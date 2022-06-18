@@ -50,15 +50,15 @@ def calc_body_crds(robot, mode_leg, x, vx, z, vz, th_com, wth_com):
     Calculate the relative coordinates of the CoM w.r.t. the toes.
     """
     if mode_leg == 1:       # front legs
-        x_body = -(robot.l_body/2)*np.cos(th_com) - x
-        vx_body = (robot.l_body/2)*np.sin(th_com)*wth_com - vx
-        z_body = (robot.l_body/2)*np.sin(th_com) + z
-        vz_body = (robot.l_body/2)*np.cos(th_com)*wth_com + vz
+        x_body = -(robot.l_base/2)*np.cos(th_com) - x
+        vx_body = (robot.l_base/2)*np.sin(th_com)*wth_com - vx
+        z_body = (robot.l_base/2)*np.sin(th_com) + z
+        vz_body = (robot.l_base/2)*np.cos(th_com)*wth_com + vz
     elif mode_leg == 2:     # back legs
-        x_body = (robot.l_body/2)*np.cos(th_com) - x
-        vx_body = -(robot.l_body/2)*np.sin(th_com)*wth_com - vx
-        z_body = -(robot.l_body/2)*np.sin(th_com) + z
-        vz_body = -(robot.l_body/2)*np.cos(th_com)*wth_com + vz
+        x_body = (robot.l_base/2)*np.cos(th_com) - x
+        vx_body = -(robot.l_base/2)*np.sin(th_com)*wth_com - vx
+        z_body = -(robot.l_base/2)*np.sin(th_com) + z
+        vz_body = -(robot.l_base/2)*np.cos(th_com)*wth_com + vz
     return x_body, z_body, vx_body, vz_body
 
 

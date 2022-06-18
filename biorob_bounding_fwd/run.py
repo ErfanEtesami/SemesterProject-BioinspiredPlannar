@@ -55,7 +55,7 @@ import utils_plot as plot
 # body_crds: relative coordinates of the CoM w.r.t. the toe
 # beta: Bezier control points
 # mu: friction coefficient
-# !!! UNITS: kg, s, m, rad, m/s, rad/s, m/(s^2), N, N.m !!! #
+# !!! UNITS: kg, s, m, rad, m/s, rad/s, m/(s^2), N, N.m, Watt !!! #
 
 
 # --- flags --- #
@@ -64,11 +64,11 @@ flag_change_robot_dynamics = 1      # 1: change dynamics of the robot or not (0)
 flag_change_plane_dynamics = 1      # 1: change dynamics of the plane or not (0)
 flag_use_afb = 1                    # 1: use feedback activation such that F_z > 0 or not (0)
 flag_clamp_x_force = 0              # 1: clamp x force by |F_x| <= mu * |F_z| or not (0)
-flag_fwd_kin = 0                    # 0: use direct forward kinematics or the equivalent one (1)
-flag_update_t_st = 0                # 1: update stance time or not (0)
+flag_fwd_kin = 1                    # 0: use direct forward kinematics or the equivalent one (1)
+flag_update_t_st = 1                # 1: update stance time or not (0)
 flag_update_traj_sw = 0             # 1: update swing trajectory or not (0)
-flag_record_video = 0               # 1: record video or not (0)
-flag_draw_traj = 0                  # 1: draw trajectory in gui or not (0)
+flag_record_video = 1               # 1: record video or not (0)
+flag_draw_traj = 1                  # 1: draw trajectory in gui or not (0)
 draw_step = 50
 flag_slow_motion = 0                # 1: slow down the simulation or not (0)
 t_slow_motion = 10*1e-3
@@ -407,7 +407,7 @@ if flag_record_video:
     verbose.record_video()
 # --- load the robot --- #
 robot = biorob_class.BioRob(plane_id=plane_id,
-                            m=m, g=g, lengths=lengths,
+                            m=m, g=g, lengths=lengths, l_base=l_base,
                             mu_robot=mu_robot, rest_robot=rest_robot,
                             mu_plane=mu_plane, rest_plane=rest_plane,
                             kp_x_init=kp_x_init, kd_x_init=kd_x_init,
@@ -975,9 +975,6 @@ for item in [t_axis, t_st_front_axis, t_st_back_axis,
     item = item[~np.isnan(item)]
 # --- plots --- #
 plot.plot_t_st(t_axis, t_st_front_axis, t_st_back_axis)
-plot.plot_traj_sw_d(t_axis,
-                    x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
-                    vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis)
 plot.plot_full(m, g, v_d, torque_sat, t_axis,
               x_com_axis, y_com_axis, z_com_axis, th_com_axis, vx_com_axis, vz_com_axis, wth_com_axis,
               fb_tot_x_fl_axis, fb_tot_z_fl_axis, fb_x_pd_fl_axis, fb_z_pd_fl_axis, fb_th_pd_fl_axis,
