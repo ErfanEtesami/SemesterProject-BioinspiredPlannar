@@ -24,7 +24,6 @@ import utils_plot as plot
 # act: actuated
 # init: initialization
 # config: configuration
-# crds: coordinates
 # fwd: forward
 # kin: kinematics
 # traj: trajectory
@@ -49,6 +48,14 @@ import utils_plot as plot
 # fb: feedback
 # afb: feedback activation
 # tf: toe force
+# com (CoM): center of mass
+# th: (theta) pitch angle
+# wth: (omega theta) pitch angular velocity
+# crds: coordinates
+# body_crds: relative coordinates of the CoM w.r.t. the toe
+# beta: Bezier control points
+# mu: friction coefficient
+# !!! UNITS: kg, s, m, rad, m/s, rad/s, m/(s^2), N, N.m !!! #
 
 
 # --- flags --- #
@@ -58,8 +65,8 @@ flag_change_plane_dynamics = 1      # 1: change dynamics of the plane or not (0)
 flag_use_afb = 1                    # 1: use feedback activation such that F_z > 0 or not (0)
 flag_clamp_x_force = 0              # 1: clamp x force by |F_x| <= mu * |F_z| or not (0)
 flag_fwd_kin = 0                    # 0: use direct forward kinematics or the equivalent one (1)
-flag_update_t_st = 1                # 1: update stance time or not (0)
-flag_update_traj_sw = 1             # 1: update swing trajectory or not (0)
+flag_update_t_st = 0                # 1: update stance time or not (0)
+flag_update_traj_sw = 0             # 1: update swing trajectory or not (0)
 flag_record_video = 0               # 1: record video or not (0)
 flag_draw_traj = 0                  # 1: draw trajectory in gui or not (0)
 draw_step = 50
@@ -70,17 +77,17 @@ verbose.check_flags([flag_fix_base, flag_change_robot_dynamics, flag_change_plan
                      flag_use_afb, flag_clamp_x_force, flag_fwd_kin, flag_update_t_st,
                      flag_update_traj_sw, flag_record_video, flag_draw_traj, flag_slow_motion])
 # --- time constants --- #
-t_step = 1*1e-3
-t_init = 1
-nb_periods = 10
-t_sw = 0.220
+t_step = 1*1e-3             # PyBullet time step of simulation
+t_init = 1                  # initialization time for applying the initial configuration
+nb_periods = 10             # number of simulation gait periods
+t_sw = 0.220                # swing time
 # --- robot constants --- #
 m = 0.721791502953507 + 4*(0.0446567870646305+0.00360792918860103+0.0310372891847717+0.0364619323149185)    # 1.1848473
-lengths = [0.160, 0.143, 0.0639, 0.115]
-l_body = 0.3892
-l_span = 0.57*l_body
-g = 9.81
-torque_sat = 2.7
+lengths = [0.160, 0.143, 0.0639, 0.115]     # length of the thigh, calf, foot1, and foot2
+l_base = 0.3892                             # length of the main body of the robot
+l_span = 0.57*l_base                        # stroke length
+g = 9.81                                    # gravity
+torque_sat = 2.7                            # saturation joint torques
 # --- friction and restitution --- #
 mu_plane = 0.8
 rest_plane = 0.5
@@ -400,7 +407,7 @@ if flag_record_video:
     verbose.record_video()
 # --- load the robot --- #
 robot = biorob_class.BioRob(plane_id=plane_id,
-                            m=m, g=g, l_body=l_body, lengths=lengths,
+                            m=m, g=g, lengths=lengths,
                             mu_robot=mu_robot, rest_robot=rest_robot,
                             mu_plane=mu_plane, rest_plane=rest_plane,
                             kp_x_init=kp_x_init, kd_x_init=kd_x_init,
@@ -536,13 +543,13 @@ while True:
     x_bl, vx_bl, z_bl, vz_bl, jac_bl, x_br, vx_br, z_br, vz_br, jac_br = \
         control.calc_fwd_kin(robot, flag_fwd_kin, q_back, vq_back)
     x_body_fl, z_body_fl, vx_body_fl, vz_body_fl = \
-        get_info.get_body_crds(robot, 1, x_fl, vx_fl, z_fl, vz_fl, th_com, wth_com)
+        get_info.calc_body_crds(robot, 1, x_fl, vx_fl, z_fl, vz_fl, th_com, wth_com)
     x_body_fr, z_body_fr, vx_body_fr, vz_body_fr = \
-        get_info.get_body_crds(robot, 1, x_fr, vx_fr, z_fr, vz_fr, th_com, wth_com)
+        get_info.calc_body_crds(robot, 1, x_fr, vx_fr, z_fr, vz_fr, th_com, wth_com)
     x_body_bl, z_body_bl, vx_body_bl, vz_body_bl = \
-        get_info.get_body_crds(robot, 2, x_bl, vx_bl, z_bl, vz_bl, th_com, wth_com)
+        get_info.calc_body_crds(robot, 2, x_bl, vx_bl, z_bl, vz_bl, th_com, wth_com)
     x_body_br, z_body_br, vx_body_br, vz_body_br = \
-        get_info.get_body_crds(robot, 2, x_br, vx_br, z_br, vz_br, th_com, wth_com)
+        get_info.calc_body_crds(robot, 2, x_br, vx_br, z_br, vz_br, th_com, wth_com)
     # --- apply initial configuration --- #
     if t <= t_init and sm_front == 1:               # front legs
         fb_x_pd_fl, fb_x_p_fl, fb_x_d_fl, fb_z_pd_fl, fb_z_p_fl, fb_z_d_fl, fb_th_pd_fl, fb_th_p_fl, fb_th_d_fl, \
@@ -620,7 +627,7 @@ while True:
             sm_front = 2
             i = 0
             ii = 0
-        if flag_fix_base == 0 and control.check_td(robot, 1):     # end of swing: switch to stance
+        if flag_fix_base == 0 and control.check_td(robot, 1):       # end of swing: switch to stance
             sm_front = 2
             i = 0
             ii = 0
@@ -674,7 +681,7 @@ while True:
             sm_back = 2
             j = 0
             jj = 0
-        if flag_fix_base == 0 and control.check_td(robot, 2):     # end of swing: switch to stance
+        if flag_fix_base == 0 and control.check_td(robot, 2):       # end of swing: switch to stance
             sm_back = 2
             j = 0
             jj = 0
@@ -967,10 +974,7 @@ for item in [t_axis, t_st_front_axis, t_st_back_axis,
              afb_front_axis, afb_back_axis]:
     item = item[~np.isnan(item)]
 # --- plots --- #
-plot.plot_traj_sw_crr(x_traj_sw_crr_front_axis, x_traj_sw_crr_back_axis,
-                      z_traj_sw_crr_front_axis, z_traj_sw_crr_back_axis)
 plot.plot_t_st(t_axis, t_st_front_axis, t_st_back_axis)
-plot.plot_v_avg(t_axis, v_avg_axis, -v_d)
 plot.plot_traj_sw_d(t_axis,
                     x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
                     vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis)
@@ -1000,4 +1004,9 @@ plot.plot_full(m, g, v_d, torque_sat, t_axis,
               mech_pow_hip_fr_axis, mech_pow_knee_fr_axis, mech_pow_tot_fr_axis,
               mech_pow_hip_bl_axis, mech_pow_knee_bl_axis, mech_pow_tot_bl_axis,
               mech_pow_hip_br_axis, mech_pow_knee_br_axis, mech_pow_tot_br_axis,
-              x_traj_sw_org, z_traj_sw_org)
+              x_traj_sw_org, z_traj_sw_org,
+              x_traj_sw_crr_front_axis, z_traj_sw_crr_front_axis,
+              x_traj_sw_crr_back_axis, z_traj_sw_crr_back_axis,
+              x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
+              vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis,
+              v_avg_axis)

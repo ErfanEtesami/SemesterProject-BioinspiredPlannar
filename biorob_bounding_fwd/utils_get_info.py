@@ -3,6 +3,9 @@ import pybullet as pb
 
 
 def get_joint_states(robot, mode_leg):
+    """
+    Read the angular position and velocity of the actuated joints.
+    """
     if mode_leg == 1:       # front legs
         # left leg
         hip_l_idx = robot.fl_hip
@@ -30,6 +33,9 @@ def get_joint_states(robot, mode_leg):
 
 
 def get_com_crds(robot):
+    """
+    Read the coordinates of the robot's CoM, including x, y, z, th (pitch angle), vx, vy, wth (pitch velocity).
+    """
     pos, orn = pb.getBasePositionAndOrientation(bodyUniqueId=robot.robot_id)
     x_com, y_com, z_com = pos[0], pos[1], pos[2]
     orn_euler = pb.getEulerFromQuaternion(orn)
@@ -39,7 +45,10 @@ def get_com_crds(robot):
     return x_com, y_com, z_com, th_com, vx_com, vz_com, wth_com
 
 
-def get_body_crds(robot, mode_leg, x, vx, z, vz, th_com, wth_com):
+def calc_body_crds(robot, mode_leg, x, vx, z, vz, th_com, wth_com):
+    """
+    Calculate the relative coordinates of the CoM w.r.t. the toes.
+    """
     if mode_leg == 1:       # front legs
         x_body = -(robot.l_body/2)*np.cos(th_com) - x
         vx_body = (robot.l_body/2)*np.sin(th_com)*wth_com - vx
@@ -54,6 +63,9 @@ def get_body_crds(robot, mode_leg, x, vx, z, vz, th_com, wth_com):
 
 
 def get_toe_forces(robot):
+    """
+    Read the forces on the toes as they contact the ground.
+    """
     fl_toe_force = np.array([[0], [0]])
     fr_toe_force = np.array([[0], [0]])
     bl_toe_force = np.array([[0], [0]])
@@ -87,6 +99,9 @@ def get_toe_forces(robot):
 
 
 def enable_torque_sensors(robot):
+    """
+    Enable PyBullet torque sensors in the actuated joints.
+    """
     for j in robot.act_joints:
         pb.enableJointForceTorqueSensor(bodyUniqueId=robot.robot_id, jointIndex=j)
     return

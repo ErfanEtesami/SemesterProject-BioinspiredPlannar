@@ -2,8 +2,7 @@ import pybullet as pb
 
 
 class BioRob:
-    def __init__(self, plane_id, m, g,
-                 l_body, lengths,
+    def __init__(self, plane_id, m, g, lengths,
                  mu_robot, rest_robot, mu_plane, rest_plane,
                  kp_x_init, kd_x_init, kp_z_init, kd_z_init, kp_th_init, kd_th_init,
                  kp_x_st, kd_x_st, kp_z_st, kd_z_st, kp_th_st, kd_th_st,
@@ -11,18 +10,17 @@ class BioRob:
                  k_st,
                  start_pos, start_orn,
                  flag_fix_base):
-        # --- general parameters --- #
+        # general parameters
         self.plane_id = plane_id
         self.m = m
         self.g = g
-        self.l_body = l_body
         self.mu_robot = mu_robot
         self.rest_robot = rest_robot
         self.mu_plane = mu_plane
         self.rest_plane = rest_plane
         self.start_pos = start_pos
         self.start_orn = start_orn
-        # --- control gains --- #
+        # control gains
         self.kp_x_init = kp_x_init
         self.kd_x_init = kd_x_init
         self.kp_z_init = kp_z_init
@@ -42,9 +40,9 @@ class BioRob:
         self.kp_th_sw = kp_th_sw
         self.kd_th_sw = kd_th_sw
         self.k_st = k_st
-        # --- flags --- #
+        # flags
         self.flag_fix_base = flag_fix_base
-        # --- robot parameters --- #
+        # load robot
         self.robot_id = pb.loadURDF(fileName='./model/biorob.urdf',
                                     basePosition=self.start_pos,
                                     baseOrientation=pb.getQuaternionFromEuler(self.start_orn),
@@ -111,7 +109,7 @@ class BioRob:
                            self.bl_hip, self.bl_knee, self.br_hip, self.br_knee]
         self.nb_joints = len(self.joints)
         self.nb_act_joints = len(self.act_joints)
-        # --- constraints --- #
+        # define constraints
         self.cst1 = pb.createConstraint(parentBodyUniqueId=self.robot_id,
                                         parentLinkIndex=self.fl_rod,
                                         childBodyUniqueId=self.robot_id,

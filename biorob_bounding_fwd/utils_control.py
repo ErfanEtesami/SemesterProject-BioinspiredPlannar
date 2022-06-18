@@ -3,6 +3,9 @@ import numpy as np
 
 
 def change_plane_dynamics(robot):
+    """
+    Change the dynamics (friction coefficient and restitution) of the plane.
+    """
     pb.changeDynamics(bodyUniqueId=robot.plane_id,
                       linkIndex=-1,
                       lateralFriction=robot.mu_plane,
@@ -10,6 +13,9 @@ def change_plane_dynamics(robot):
 
 
 def change_robot_dynamics(robot):
+    """
+    Change the dynamics (friction coefficient and restitution) of the robot's links.
+    """
     for j in robot.links:
         pb.changeDynamics(bodyUniqueId=robot.robot_id,
                           linkIndex=j,
@@ -19,6 +25,9 @@ def change_robot_dynamics(robot):
 
 
 def disable_default_control(robot):
+    """
+    Disable the default PyBullet velocity control in the robot's joints.
+    """
     pb.setJointMotorControlArray(bodyUniqueId=robot.robot_id,
                                  jointIndices=robot.joints,
                                  controlMode=pb.VELOCITY_CONTROL,
@@ -27,6 +36,9 @@ def disable_default_control(robot):
 
 
 def check_td(robot, mode_leg):
+    """
+    Check whether the toes touch down the ground or not.
+    """
     if mode_leg == 1:       # front legs
         temp_l = pb.getContactPoints(bodyA=robot.robot_id, bodyB=robot.plane_id,
                                      linkIndexA=robot.fl_foot, linkIndexB=-1)
@@ -44,24 +56,30 @@ def check_td(robot, mode_leg):
 
 
 def clamp_x_force(force_x, force_z, mu):
+    """
+    Clamp x force by |F_x| <= mu * |F_z|.
+    """
     if abs(force_x) > mu*abs(force_z) and force_x != 0:
         force_x = mu * abs(force_z) * (force_x/abs(force_x))
     return force_x
 
 
 def calc_fwd_kin_dir(robot, q, vq):
-    # --- modify angles' references --- #
+    """
+    Calculate the direct forward kinematics of the leg.
+    """
+    # modify angles' references
     q0 = q[0] + np.pi/4
     q2 = q[1] + np.pi/2
     vq0 = vq[0]
     vq2 = vq[1]
-    # --- calculate x and vx of the toe w.r.t. to the hip joint --- #
+    # calculate x and vx of the toe w.r.t. the hip joint
     x = (robot.l_thigh+robot.l_foot2)*np.cos(q0) + robot.l_calf*np.cos(q0+q2)
     vx = -(robot.l_thigh+robot.l_foot2)*np.sin(q0)*vq0 + -robot.l_calf*np.sin(q0+q2)*(vq0+vq2)
-    # --- calculate z and vz of the toe w.r.t. to the hip joint --- #
+    # calculate z and vz of the toe w.r.t. the hip joint
     z = (robot.l_thigh+robot.l_foot2)*np.sin(q0) + robot.l_calf*np.sin(q0+q2)
     vz = (robot.l_thigh+robot.l_foot2)*np.cos(q0)*vq0 + robot.l_calf*np.cos(q0+q2)*(vq0+vq2)
-    # --- calculate leg's jacobian --- #
+    # calculate the leg's jacobian
     j_11 = -(robot.l_thigh+robot.l_foot2)*np.sin(q0) + -robot.l_calf*np.sin(q0+q2)
     j_12 = -robot.l_calf*np.sin(q0+q2)
     j_21 = (robot.l_thigh+robot.l_foot2)*np.cos(q0) + robot.l_calf*np.cos(q0+q2)
@@ -71,31 +89,34 @@ def calc_fwd_kin_dir(robot, q, vq):
 
 
 def calc_fwd_kin_eqv(robot, q, vq):
-    # --- modify angles' references --- #
+    """
+    Calculate the equivalent forward kinematics of the leg.
+    """
+    # modify angles' references
     q0 = q[0] + np.pi/4
     q2 = q[1] + np.pi/2
     q3 = q2
     vq0 = vq[0]
     vq2 = vq[1]
     vq3 = -vq2
-    # --- calculate equivalent leg length --- #
+    # calculate equivalent leg length
     l = np.sqrt(robot.l_calf**2 + robot.l_foot2**2 + 2*robot.l_calf*robot.l_foot2*np.cos(q3))
     dl_dq3 = (-2*robot.l_calf*robot.l_foot2*np.sin(q3)) / (2*l)
     dl_dt = dl_dq3 * vq3
-    # --- calculate alpha angle --- #
+    # calculate alpha angle
     u = (robot.l_foot2/l) * np.sin(np.pi-q3)
     du_dq3 = -(robot.l_foot2/l)*np.cos(np.pi-q3) + -(robot.l_foot2/(l**2))*np.sin(np.pi-q3)*dl_dq3
     du_dt = -(robot.l_foot2/l)*np.cos(np.pi-q3)*vq3 + -(robot.l_foot2/(l**2))*np.sin(np.pi-q3)*dl_dt
     alpha = np.arcsin(u)
     dalpha_dq3 = (1/np.sqrt(1-(u**2))) * du_dq3
     dalpha_dt = (1/np.sqrt(1-(u**2))) * du_dt
-    # --- calculate x and vx of the toe w.r.t. to the hip joint --- #
+    # calculate x and vx of the toe w.r.t. the hip joint
     x = robot.l_thigh*np.cos(q0) + l*np.cos(q0+q2-alpha)
     vx = -robot.l_thigh*np.sin(q0)*vq0 + dl_dt*np.cos(q0+q2-alpha) + -l*np.sin(q0+q2-alpha)*(vq0+vq2-dalpha_dt)
-    # --- calculate z and vz of the toe w.r.t. to the hip joint --- #
+    # calculate z and vz of the toe w.r.t. the hip joint
     z = robot.l_thigh*np.sin(q0) + l*np.sin(q0+q2-alpha)
     vz = robot.l_thigh*np.cos(q0)*vq0 + dl_dt*np.sin(q0+q2-alpha) + l*np.cos(q0+q2-alpha)*(vq0+vq2-dalpha_dt)
-    # --- calculate leg's jacobian --- #
+    # calculate the leg's jacobian
     j_11 = -robot.l_thigh*np.sin(q0) + -l*np.sin(q0+q2-alpha)
     j_12 = dl_dq3*np.cos(q0+q2-alpha) + -l*np.sin(q0+q2-alpha)*(1-dalpha_dq3)
     j_21 = robot.l_thigh*np.cos(q0) + l*np.cos(q0+q2-alpha)
@@ -105,6 +126,9 @@ def calc_fwd_kin_eqv(robot, q, vq):
 
 
 def calc_fwd_kin(robot, flag_fwd_kin, q, vq):
+    """
+    Calculate the forward kinematics of the leg.
+    """
     if flag_fwd_kin == 0:       # direct forward kinematics
         x_l, vx_l, z_l, vz_l, jac_l = calc_fwd_kin_dir(robot, [q[0], q[1]], [vq[0], vq[1]])
         x_r, vx_r, z_r, vz_r, jac_r = calc_fwd_kin_dir(robot, [q[2], q[3]], [vq[2], vq[3]])
@@ -115,6 +139,9 @@ def calc_fwd_kin(robot, flag_fwd_kin, q, vq):
 
 
 def gen_fb(robot, mode_control, x, x_d, vx, vx_d, z, z_d, vz, vz_d, th, th_d, wth, wth_d):
+    """
+    Generate the feedback.
+    """
     if mode_control == 1:       # initialization
         kp_x = robot.kp_x_init
         kd_x = robot.kd_x_init
@@ -149,6 +176,9 @@ def gen_fb(robot, mode_control, x, x_d, vx, vx_d, z, z_d, vz, vz_d, th, th_d, wt
 
 
 def calc_torques(jac_l, force_l, jac_r, force_r, torque_sat):
+    """
+    Calculate the joints torques (joint torques = jacobian.transpose * toe force)
+    """
     torques_l = np.matmul(np.transpose(jac_l), force_l)
     torques_r = np.matmul(np.transpose(jac_r), force_r)
     torques = np.vstack((torques_l, torques_r))
@@ -159,6 +189,9 @@ def calc_torques(jac_l, force_l, jac_r, force_r, torque_sat):
 
 
 def apply_torques(robot, mode_leg, torques):
+    """
+    Apply the calculated torques to the joints.
+    """
     if mode_leg == 1:       # front legs
         pb.setJointMotorControlArray(bodyUniqueId=robot.robot_id,
                                      jointIndices=robot.front_joints,
@@ -180,6 +213,10 @@ def apply_control(robot, mode_leg, mode_control,
                   x_d, vx_d, z_d, vz_d, th_d, wth_d,
                   cnt_x_l, cnt_x_r, cnt_z_l, cnt_z_r,
                   torque_sat, afb, mu, flag_clamp_x_force):
+    """
+    Calculate the total toe force (contact + feedback) and the corresponding joint torques.
+    Then apply the torques to the joints.
+    """
     # calculate feedback
     fb_x_pd_l, fb_x_p_l, fb_x_d_l, fb_z_pd_l, fb_z_p_l, fb_z_d_l, fb_th_pd_l, fb_th_p_l, fb_th_d_l = \
         gen_fb(robot, mode_control, x_l, x_d, vx_l, vx_d, z_l, z_d, vz_l, vz_d, th, th_d, wth, wth_d)
