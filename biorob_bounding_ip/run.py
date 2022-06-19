@@ -43,6 +43,7 @@ import utils_plot as plot
 # mech: mechanical
 # mu: friction coefficient
 # nb: number of
+# org: original
 # p: proportional
 # poly: polynomial
 # pow: power
@@ -63,7 +64,7 @@ import utils_plot as plot
 flag_fix_base = 0                   # 1: fix the base on air or not (0)
 flag_change_robot_dynamics = 1      # 1: change dynamics of the robot or not (0)
 flag_change_plane_dynamics = 1      # 1: change dynamics of the plane or not (0)
-flag_use_afb = 0                    # 1: use feedback activation such that F_z > 0 or not (0)
+flag_use_afb = 1                    # 1: use feedback activation such that F_z > 0 or not (0)
 flag_clamp_x_force = 0              # 1: clamp x force by |F_x| <= mu * |F_z| or not (0)
 flag_fwd_kin = 0                    # 0: use direct forward kinematics or the equivalent one (1)
 flag_update_t_st = 0                # 1: update stance time or not (0)
@@ -75,7 +76,7 @@ t_slow_motion = 10*1e-3
 # check flag inputs
 verbose.check_flags([flag_fix_base, flag_change_robot_dynamics, flag_change_plane_dynamics,
                      flag_use_afb, flag_clamp_x_force, flag_fwd_kin, flag_update_t_st,
-                     flag_update_traj_sw, flag_record_video, flag_draw_traj, flag_slow_motion])
+                     flag_record_video, flag_draw_traj, flag_slow_motion])
 # --- time constants --- #
 t_step = 1*1e-3             # PyBullet time step of simulation
 t_init = 1                  # initialization time for applying the initial configuration
@@ -120,8 +121,8 @@ if flag_fix_base == 0:
     kd_th_init = 0
     # stance
     kp_x_st = 60
-    kd_x_st = 20
-    kp_z_st = 100
+    kd_x_st = 10
+    kp_z_st = 80
     kd_z_st = 10
     kp_th_st = 0
     kd_th_st = 0
@@ -156,6 +157,7 @@ elif flag_fix_base == 1:
     kd_th_sw = 0
 # --- temporal gait parameters --- #
 v_d = 0
+t_st_org = t_st
 x_st_d = 0.00
 z_st_d = 0.25
 th_st_d = 0.00
@@ -215,11 +217,10 @@ elif flag_use_afb == 1:
                                   1*beta_afb_1, 1*beta_afb_2)
     plot.plot_afb(t_st_front_array, t_st_back_array, afb_front, afb_back)
 # --- generate swing original trajectory --- #
-x_traj_sw_org = st_x_d * np.ones(len(t_sw_array))
-z_traj_sw_org = st_z_d * np.ones(len(t_sw_array))
+x_traj_sw_org = x_st_d * np.ones(len(t_sw_array))
+z_traj_sw_org = z_st_d * np.ones(len(t_sw_array))
 vx_traj_sw_org = np.gradient(x_traj_sw_org, t_step)
 vz_traj_sw_org = np.gradient(z_traj_sw_org, t_step)
-plot.plot_traj_sw(t_sw_array, x_traj_sw_org, z_traj_sw_org, vx_traj_sw_org, vz_traj_sw_org)
 # --- initialize storing variables --- #
 # time
 time_array = np.arange(0, t_init+nb_periods*(t_st+t_sw), t_step)
@@ -667,7 +668,7 @@ while True:
     # --- update t_st --- #
     if flag_update_t_st == 1 and flag_td_front == 1 and flag_td_back == 1:
         t_diff = abs(t_td_front-t_td_back)
-        t_st = (l_span/v_d) - k_st*(t_diff-t_stride/2)
+        t_st = t_st_org - k_st*(t_diff-t_stride/2)
         t_air = (t_sw-t_st)/2
         t_stride = t_st+t_sw
         flag_td_front = 0
@@ -717,17 +718,17 @@ while True:
     tf_x_bl_axis[t_count], tf_z_bl_axis[t_count], tf_x_br_axis[t_count], tf_z_br_axis[t_count] = \
         get_info.get_toe_forces(robot)
     # --- calculate mechanical power --- #
-    mech_pow_hip_fl_axis[t_count] = torque_fl_hip * vq_front[0]
-    mech_pow_knee_fl_axis[t_count] = torque_fl_knee * vq_front[1]
+    mech_pow_hip_fl_axis[t_count] = np.abs(torque_fl_hip * vq_front[0])
+    mech_pow_knee_fl_axis[t_count] = np.abs(torque_fl_knee * vq_front[1])
     mech_pow_tot_fl_axis[t_count] = mech_pow_hip_fl_axis[t_count] + mech_pow_knee_fl_axis[t_count]
-    mech_pow_hip_fr_axis[t_count] = torque_fr_hip * vq_front[2]
-    mech_pow_knee_fr_axis[t_count] = torque_fr_knee * vq_front[3]
+    mech_pow_hip_fr_axis[t_count] = np.abs(torque_fr_hip * vq_front[2])
+    mech_pow_knee_fr_axis[t_count] = np.abs(torque_fr_knee * vq_front[3])
     mech_pow_tot_fr_axis[t_count] = mech_pow_hip_fr_axis[t_count] + mech_pow_knee_fr_axis[t_count]
-    mech_pow_hip_bl_axis[t_count] = torque_bl_hip * vq_back[0]
-    mech_pow_knee_bl_axis[t_count] = torque_bl_knee * vq_back[1]
+    mech_pow_hip_bl_axis[t_count] = np.abs(torque_bl_hip * vq_back[0])
+    mech_pow_knee_bl_axis[t_count] = np.abs(torque_bl_knee * vq_back[1])
     mech_pow_tot_bl_axis[t_count] = mech_pow_hip_bl_axis[t_count] + mech_pow_knee_bl_axis[t_count]
-    mech_pow_hip_br_axis[t_count] = torque_br_hip * vq_back[2]
-    mech_pow_knee_br_axis[t_count] = torque_br_knee * vq_back[3]
+    mech_pow_hip_br_axis[t_count] = np.abs(torque_br_hip * vq_back[2])
+    mech_pow_knee_br_axis[t_count] = np.abs(torque_br_knee * vq_back[3])
     mech_pow_tot_br_axis[t_count] = mech_pow_hip_br_axis[t_count] + mech_pow_knee_br_axis[t_count]
     # --- store current data --- #
     t_axis[t_count] = t
@@ -941,6 +942,4 @@ plot.plot_full(m, g, v_d, torque_sat, t_axis,
               mech_pow_hip_bl_axis, mech_pow_knee_bl_axis, mech_pow_tot_bl_axis,
               mech_pow_hip_br_axis, mech_pow_knee_br_axis, mech_pow_tot_br_axis,
               x_traj_sw_org, z_traj_sw_org,
-              x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
-              vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis,
               t_st_front_axis, t_st_back_axis)
