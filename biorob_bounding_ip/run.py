@@ -63,11 +63,10 @@ import utils_plot as plot
 flag_fix_base = 0                   # 1: fix the base on air or not (0)
 flag_change_robot_dynamics = 1      # 1: change dynamics of the robot or not (0)
 flag_change_plane_dynamics = 1      # 1: change dynamics of the plane or not (0)
-flag_use_afb = 1                    # 1: use feedback activation such that F_z > 0 or not (0)
+flag_use_afb = 0                    # 1: use feedback activation such that F_z > 0 or not (0)
 flag_clamp_x_force = 0              # 1: clamp x force by |F_x| <= mu * |F_z| or not (0)
-flag_fwd_kin = 1                    # 0: use direct forward kinematics or the equivalent one (1)
-flag_update_t_st = 1                # 1: update stance time or not (0)
-flag_update_traj_sw = 0             # 1: update swing trajectory or not (0)
+flag_fwd_kin = 0                    # 0: use direct forward kinematics or the equivalent one (1)
+flag_update_t_st = 0                # 1: update stance time or not (0)
 flag_record_video = 1               # 1: record video or not (0)
 flag_draw_traj = 1                  # 1: draw trajectory in gui or not (0)
 draw_step = 50
@@ -81,6 +80,7 @@ verbose.check_flags([flag_fix_base, flag_change_robot_dynamics, flag_change_plan
 t_step = 1*1e-3             # PyBullet time step of simulation
 t_init = 1                  # initialization time for applying the initial configuration
 nb_periods = 10             # number of simulation gait periods
+t_st = 0.110                # stance time
 t_sw = 0.220                # swing time
 # --- robot constants --- #
 m = 0.721791502953507 + 4*(0.0446567870646305+0.00360792918860103+0.0310372891847717+0.0364619323149185)    # 1.1848473
@@ -119,17 +119,17 @@ if flag_fix_base == 0:
     kp_th_init = 0
     kd_th_init = 0
     # stance
-    kp_x_st = 0
-    kd_x_st = 10
-    kp_z_st = 150
-    kd_z_st = 5
-    kp_th_st = 5
-    kd_th_st = 0.2
+    kp_x_st = 60
+    kd_x_st = 20
+    kp_z_st = 100
+    kd_z_st = 10
+    kp_th_st = 0
+    kd_th_st = 0
     # swing
-    kp_x_sw = 100
-    kd_x_sw = 5
-    kp_z_sw = 100
-    kd_z_sw = 5
+    kp_x_sw = 60
+    kd_x_sw = 10
+    kp_z_sw = 60
+    kd_z_sw = 10
     kp_th_sw = 0
     kd_th_sw = 0
 elif flag_fix_base == 1:
@@ -141,28 +141,27 @@ elif flag_fix_base == 1:
     kp_th_init = 0
     kd_th_init = 0
     # stance
-    kp_x_st = 0
-    kd_x_st = 10
-    kp_z_st = 150
-    kd_z_st = 5
+    kp_x_st = 60
+    kd_x_st = 20
+    kp_z_st = 100
+    kd_z_st = 10
     kp_th_st = 0
     kd_th_st = 0
     # swing
-    kp_x_sw = 100
-    kd_x_sw = 5
-    kp_z_sw = 100
-    kd_z_sw = 5
+    kp_x_sw = 60
+    kd_x_sw = 10
+    kp_z_sw = 60
+    kd_z_sw = 10
     kp_th_sw = 0
     kd_th_sw = 0
 # --- temporal gait parameters --- #
-v_d = 1.5
-x_st_d = 0.03
+v_d = 0
+x_st_d = 0.00
 z_st_d = 0.25
 th_st_d = 0.00
 vx_st_d = -v_d
 vz_st_d = 0.00
 wth_st_d = 0.00
-t_st = l_span/v_d
 t_st_array = np.arange(0, t_st, t_step)
 t_air = (t_sw-t_st)/2
 t_stride = t_st+t_sw
@@ -176,8 +175,8 @@ t_st_front_array = np.arange(0, t_st_front, t_step)
 t_st_back_array = np.arange(0, t_st_back, t_step)
 t_sw_array = np.arange(0, t_sw, t_step)
 # --- generate contact profiles --- #
-ratio_alpha_z = 0.3         # location of the peak of the contact force in terms of finished percentage of t_stance
-ratio_cnt_xz = 0.2          # ration of the x contact force w.r.t. the z contact force
+ratio_alpha_z = 0.5         # location of the peak of the contact force in terms of finished percentage of t_stance
+ratio_cnt_xz = 0.0          # ration of the x contact force w.r.t. the z contact force
 t_alpha_z_front = t_st_front*ratio_alpha_z
 t_alpha_x_front = t_st_front*0.5
 t_alpha_z_back = t_st_back*ratio_alpha_z
@@ -216,29 +215,11 @@ elif flag_use_afb == 1:
                                   1*beta_afb_1, 1*beta_afb_2)
     plot.plot_afb(t_st_front_array, t_st_back_array, afb_front, afb_back)
 # --- generate swing original trajectory --- #
-beta_sw_x = np.array([-l_span/2, -0.144, -0.103, -0.213, 0.145,
-                      0.000, 0.138, 0.123, 0.124, l_span/2])
-beta_sw_z = -np.array([-0.300, -0.270, -0.223, -0.120, -0.530,
-                      0.000, -0.340, -0.223, -0.270, -0.300]) - (0.3-z_st_d)
-x_traj_sw_org = gen_curves.gen_traj_sw(t_sw, t_sw_array, beta_sw_x)
-z_traj_sw_org = gen_curves.gen_traj_sw(t_sw, t_sw_array, beta_sw_z)
+x_traj_sw_org = st_x_d * np.ones(len(t_sw_array))
+z_traj_sw_org = st_z_d * np.ones(len(t_sw_array))
 vx_traj_sw_org = np.gradient(x_traj_sw_org, t_step)
 vz_traj_sw_org = np.gradient(z_traj_sw_org, t_step)
-plot.plot_traj_sw(beta_sw_x, beta_sw_z, t_sw_array, x_traj_sw_org, z_traj_sw_org,
-                  vx_traj_sw_org, vz_traj_sw_org)
-# --- generate swing corrected trajectory --- #
-x_traj_sw_crr_front = x_traj_sw_org
-x_traj_sw_crr_back = x_traj_sw_org
-z_traj_sw_crr_front = z_traj_sw_org
-z_traj_sw_crr_back = z_traj_sw_org
-vx_traj_sw_crr_front = vx_traj_sw_org
-vx_traj_sw_crr_back = vx_traj_sw_org
-vz_traj_sw_crr_front = vz_traj_sw_org
-vz_traj_sw_crr_back = vz_traj_sw_org
-x_traj_sw_crr_front_axis = x_traj_sw_crr_front
-x_traj_sw_crr_back_axis = x_traj_sw_crr_back
-z_traj_sw_crr_front_axis = z_traj_sw_crr_front
-z_traj_sw_crr_back_axis = z_traj_sw_crr_back
+plot.plot_traj_sw(t_sw_array, x_traj_sw_org, z_traj_sw_org, vx_traj_sw_org, vz_traj_sw_org)
 # --- initialize storing variables --- #
 # time
 time_array = np.arange(0, t_init+nb_periods*(t_st+t_sw), t_step)
@@ -382,8 +363,6 @@ mech_pow_tot_bl_axis = np.full(time_len, np.nan)
 mech_pow_hip_br_axis = np.full(time_len, np.nan)
 mech_pow_knee_br_axis = np.full(time_len, np.nan)
 mech_pow_tot_br_axis = np.full(time_len, np.nan)
-# average velocity
-v_avg_axis = np.full(time_len, np.nan)
 # desired swing trajectories
 x_sw_d_front_axis = np.full(time_len, np.nan)
 x_sw_d_back_axis = np.full(time_len, np.nan)
@@ -529,7 +508,6 @@ while True:
     vx_sw_d_b = 0
     vz_sw_d_f = 0
     vz_sw_d_b = 0
-    v_avg = 0
     afb_f = 1
     afb_b = 1
     # --- update camera position --- #
@@ -582,7 +560,6 @@ while True:
         sm_back = 2
     # --- state machine of front legs --- #
     if sm_front == 2:                           # stance
-        v_avg = (vx_fl+vx_fr)/2
         cnt_x_fl = cnt_x_front[i]/2
         cnt_x_fr = cnt_x_front[i]/2
         cnt_z_fl = cnt_z_front[i]/2
@@ -606,10 +583,10 @@ while True:
             ii = 0
             flag_end_t_st_front = 1
     elif sm_front == 3:                         # swing
-        x_sw_d_f = x_traj_sw_crr_front[ii]
-        vx_sw_d_f = vx_traj_sw_crr_front[ii]
-        z_sw_d_f = z_traj_sw_crr_front[ii]
-        vz_sw_d_f = vz_traj_sw_crr_front[ii]
+        x_sw_d_f = x_traj_sw_org[ii]
+        vx_sw_d_f = vx_traj_sw_org[ii]
+        z_sw_d_f = z_traj_sw_org[ii]
+        vz_sw_d_f = vz_traj_sw_org[ii]
         th_sw_d = 0
         wth_sw_d = 0
         fb_x_pd_fl, fb_x_p_fl, fb_x_d_fl, fb_z_pd_fl, fb_z_p_fl, fb_z_d_fl, fb_th_pd_fl, fb_th_p_fl, fb_th_d_fl, \
@@ -636,7 +613,6 @@ while True:
             t_td_front = t
     # --- state machine of back legs --- #
     if sm_back == 2:                        # stance
-        v_avg = (vx_bl+vx_br)/2
         cnt_x_bl = cnt_x_back[j]/2
         cnt_x_br = cnt_x_back[j]/2
         cnt_z_bl = cnt_z_back[j]/2
@@ -660,10 +636,10 @@ while True:
             jj = 0
             flag_end_t_st_back = 1
     elif sm_back == 3:                      # swing
-        x_sw_d_b = x_traj_sw_crr_back[jj]
-        vx_sw_d_b = vx_traj_sw_crr_back[jj]
-        z_sw_d_b = z_traj_sw_crr_back[jj]
-        vz_sw_d_b = vz_traj_sw_crr_back[jj]
+        x_sw_d_b = x_traj_sw_org[jj]
+        vx_sw_d_b = vx_traj_sw_org[jj]
+        z_sw_d_b = z_traj_sw_org[jj]
+        vz_sw_d_b = vz_traj_sw_org[jj]
         th_sw_d = 0
         wth_sw_d = 0
         fb_x_pd_bl, fb_x_p_bl, fb_x_d_bl, fb_z_pd_bl, fb_z_p_bl, fb_z_d_bl, fb_th_pd_bl, fb_th_p_bl, fb_th_d_bl, \
@@ -688,37 +664,6 @@ while True:
             jj = 0
             flag_td_back = 1
             t_td_back = t
-    # --- wrap swing trajectory --- #
-    if flag_update_traj_sw == 1 and flag_end_t_st_front == 1:
-        x_f = x_fl
-        z_f = z_fl
-        vx_f = vx_fl
-        beta_s_sw = [0, vx_f/(3*vx_traj_sw_org[0]), 1--v_d/(3*vx_traj_sw_org[-1]), 1]
-        s_sw = gen_curves.gen_s_sw(t_sw, t_sw_array, beta_s_sw)
-        x_traj_sw_mdf_front = gen_curves.gen_traj_sw_mdf(s_sw, beta_sw_x)
-        z_traj_sw_mdf_front = gen_curves.gen_traj_sw_mdf(s_sw, beta_sw_z)
-        vx_traj_sw_mdf_front = np.gradient(x_traj_sw_mdf_front, t_step)
-        vz_traj_sw_mdf_front = np.gradient(z_traj_sw_mdf_front, t_step)
-        x_traj_sw_crr_front = gen_curves.gen_traj_sw_crr(s_sw, x_f, x_traj_sw_mdf_front)
-        z_traj_sw_crr_front = gen_curves.gen_traj_sw_crr(s_sw, z_f, z_traj_sw_mdf_front)
-        vx_traj_sw_crr_front = np.gradient(x_traj_sw_crr_front, t_step)
-        vz_traj_sw_crr_front = np.gradient(z_traj_sw_crr_front, t_step)
-        flag_end_t_st_front = 0
-    if flag_update_traj_sw == 1 and flag_end_t_st_back == 1:
-        x_f = x_bl
-        z_f = z_bl
-        vx_f = vx_bl
-        beta_s_sw = [0, vx_f/(3*vx_traj_sw_org[0]), 1--v_d/(3*vx_traj_sw_org[-1]), 1]
-        s_sw = gen_curves.gen_s_sw(t_sw, t_sw_array, beta_s_sw)
-        x_traj_sw_mdf_back = gen_curves.gen_traj_sw_mdf(s_sw, beta_sw_x)
-        z_traj_sw_mdf_back = gen_curves.gen_traj_sw_mdf(s_sw, beta_sw_z)
-        vx_traj_sw_mdf_back = np.gradient(x_traj_sw_mdf_back, t_step)
-        vz_traj_sw_mdf_back = np.gradient(z_traj_sw_mdf_back, t_step)
-        x_traj_sw_crr_back = gen_curves.gen_traj_sw_crr(s_sw, x_f, x_traj_sw_mdf_back)
-        z_traj_sw_crr_back = gen_curves.gen_traj_sw_crr(s_sw, z_f, z_traj_sw_mdf_back)
-        vx_traj_sw_crr_back = np.gradient(x_traj_sw_crr_back, t_step)
-        vz_traj_sw_crr_back = np.gradient(z_traj_sw_crr_back, t_step)
-        flag_end_t_st_back = 0
     # --- update t_st --- #
     if flag_update_t_st == 1 and flag_td_front == 1 and flag_td_back == 1:
         t_diff = abs(t_td_front-t_td_back)
@@ -895,7 +840,6 @@ while True:
     vz_body_fr_axis[t_count] = vz_body_fr
     vz_body_bl_axis[t_count] = vz_body_bl
     vz_body_br_axis[t_count] = vz_body_br
-    v_avg_axis[t_count] = v_avg
     x_sw_d_front_axis[t_count] = x_sw_d_f
     x_sw_d_back_axis[t_count] = x_sw_d_b
     z_sw_d_front_axis[t_count] = z_sw_d_f
@@ -906,10 +850,6 @@ while True:
     vz_sw_d_back_axis[t_count] = vz_sw_d_b
     afb_front_axis[t_count] = afb_f
     afb_back_axis[t_count] = afb_b
-    x_traj_sw_crr_front_axis = np.append(x_traj_sw_crr_front_axis, x_traj_sw_crr_front)
-    z_traj_sw_crr_front_axis = np.append(z_traj_sw_crr_front_axis, z_traj_sw_crr_front)
-    x_traj_sw_crr_back_axis = np.append(x_traj_sw_crr_back_axis, x_traj_sw_crr_back)
-    z_traj_sw_crr_back_axis = np.append(z_traj_sw_crr_back_axis, z_traj_sw_crr_back)
     # --- drawing model foot trajectory --- #
     if flag_draw_traj == 1 and t_count > 0 and t_count % draw_step == 0:
         verbose.draw_traj(x_fl_axis[t_count-draw_step], x_fl_axis[t_count],
@@ -969,13 +909,11 @@ for item in [t_axis, t_st_front_axis, t_st_back_axis,
              mech_pow_hip_fr_axis, mech_pow_knee_fr_axis, mech_pow_tot_fr_axis,
              mech_pow_hip_bl_axis, mech_pow_knee_bl_axis, mech_pow_tot_bl_axis,
              mech_pow_hip_br_axis, mech_pow_knee_br_axis, mech_pow_tot_br_axis,
-             v_avg_axis,
              x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
              vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis,
              afb_front_axis, afb_back_axis]:
     item = item[~np.isnan(item)]
 # --- generate final plots --- #
-plot.plot_t_st(t_axis, )
 plot.plot_full(m, g, v_d, torque_sat, t_axis,
               x_com_axis, y_com_axis, z_com_axis, th_com_axis, vx_com_axis, vz_com_axis, wth_com_axis,
               fb_tot_x_fl_axis, fb_tot_z_fl_axis, fb_x_pd_fl_axis, fb_z_pd_fl_axis, fb_th_pd_fl_axis,
@@ -1003,9 +941,6 @@ plot.plot_full(m, g, v_d, torque_sat, t_axis,
               mech_pow_hip_bl_axis, mech_pow_knee_bl_axis, mech_pow_tot_bl_axis,
               mech_pow_hip_br_axis, mech_pow_knee_br_axis, mech_pow_tot_br_axis,
               x_traj_sw_org, z_traj_sw_org,
-              x_traj_sw_crr_front_axis, z_traj_sw_crr_front_axis,
-              x_traj_sw_crr_back_axis, z_traj_sw_crr_back_axis,
               x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
               vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis,
-              v_avg_axis,
               t_st_front_axis, t_st_back_axis)

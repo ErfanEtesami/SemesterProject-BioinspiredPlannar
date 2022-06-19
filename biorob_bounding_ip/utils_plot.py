@@ -28,11 +28,8 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
               mech_pow_hip_bl_axis, mech_pow_knee_bl_axis, mech_pow_tot_bl_axis,
               mech_pow_hip_br_axis, mech_pow_knee_br_axis, mech_pow_tot_br_axis,
               x_traj_sw_org, z_traj_sw_org,
-              x_traj_sw_crr_front_axis, z_traj_sw_crr_front_axis,
-              x_traj_sw_crr_back_axis, z_traj_sw_crr_back_axis,
               x_sw_d_front_axis, x_sw_d_back_axis, z_sw_d_front_axis, z_sw_d_back_axis,
               vx_sw_d_front_axis, vx_sw_d_back_axis, vz_sw_d_front_axis, vz_sw_d_back_axis,
-              v_avg_axis,
               t_st_front_axis, t_st_back_axis):
     """
     Plot the results and gathered data during the whole simulation.
@@ -79,7 +76,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[1, 1].set_xlabel('t (s)')
     gph[1, 1].set_ylabel('T (N.m)')
     gph[1, 1].legend(['hip', 'knee'])
-    fig.savefig('./plots/biorob_bounding_fwd_joint_torques.png')
+    fig.savefig('./plots/biorob_bounding_ip_joint_torques.png')
     # total force (action) + contact force + feedback  + pybullet measured forces in x and z directions
     fig, gph = plt.subplots(4, 4, constrained_layout=True, figsize=(24, 12))
     gph[0, 0].plot(t_axis, action_x_fl_axis)
@@ -190,7 +187,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[3, 3].set_title('back right foot - measured z forces')
     gph[3, 3].set_xlabel('t (s)')
     gph[3, 3].set_ylabel('F (N)')
-    fig.savefig('./plots/biorob_bounding_fwd_force_profiles.png')
+    fig.savefig('./plots/biorob_bounding_ip_force_profiles.png')
     # CoM coordinates
     fig, gph = plt.subplots(4, 2, constrained_layout=True, figsize=(12, 12))
     gph[0, 0].plot(t_axis, x_com_axis)
@@ -234,7 +231,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[3, 1].set_title('angular velocity vs angular position of the CoM')
     gph[3, 1].set_xlabel('th_com (rad)')
     gph[3, 1].set_ylabel('wth_com (rad/s)')
-    fig.savefig('./plots/biorob_bounding_fwd_CoM_coordinates.png')
+    fig.savefig('./plots/biorob_bounding_ip_CoM_coordinates.png')
     # contact force profiles
     fig, gph = plt.subplots(4, 2, constrained_layout=True, figsize=(24, 12))
     gph[0, 0].plot(t_axis, cnt_x_fl_axis)
@@ -277,7 +274,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[3, 1].set_title('back right leg - z contact profile')
     gph[3, 1].set_xlabel('t (s)')
     gph[3, 1].set_ylabel('F (N)')
-    fig.savefig('./plots/biorob_bounding_fwd_contact_forces_simulation.png')
+    fig.savefig('./plots/biorob_bounding_ip_contact_forces_simulation.png')
     # feedbacks in details
     fig, gph = plt.subplots(4, 3, constrained_layout=True, figsize=(24, 18))
     gph[0, 0].plot(t_axis, fb_x_p_fl_axis)
@@ -376,7 +373,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[3, 2].set_xlabel('t (s)')
     gph[3, 2].set_ylabel('feedback force (N)')
     gph[3, 2].legend(['proportional', 'derivative', 'total'])
-    fig.savefig('./plots/biorob_bounding_fwd_feedbacks.png')
+    fig.savefig('./plots/biorob_bounding_ip_feedbacks.png')
     # mechanical power
     fig, gph = plt.subplots(2, 2, constrained_layout=True, figsize=(12, 6))
     gph[0, 0].plot(t_axis, mech_pow_hip_fl_axis)
@@ -411,7 +408,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[1, 1].set_xlabel('t (s)')
     gph[1, 1].set_ylabel('power (Watt)')
     gph[1, 1].legend(['hip', 'knee', 'total'])
-    fig.savefig('./plots/biorob_bounding_fwd_mechanical_power.png')
+    fig.savefig('./plots/biorob_bounding_ip_mechanical_power.png')
     # toe trajectory
     fig, gph = plt.subplots(4, 5, constrained_layout=True, figsize=(30, 12))
     gph[0, 0].plot(t_axis, x_fl_axis)
@@ -538,26 +535,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[3, 4].set_xlabel('t (s)')
     gph[3, 4].set_ylabel('vz (m/s)')
     gph[3, 4].grid()
-    fig.savefig('./plots/biorob_bounding_fwd_toe_trajectory.png')
-    # corrected swing trajectory
-    fig, gph = plt.subplots(1, 2, constrained_layout=True, figsize=(12, 6))
-    gph[0].plot(x_traj_sw_crr_front_axis, z_traj_sw_crr_front_axis)
-    gph[0].invert_yaxis()
-    gph[0].axvline(x=0, c='k')
-    gph[0].axhline(y=0, c='k')
-    gph[0].set_title('front legs - corrected swing trajectory')
-    gph[0].set_xlabel('x (m)')
-    gph[0].set_ylabel('z (m)')
-    gph[0].grid()
-    gph[1].plot(x_traj_sw_crr_back_axis, z_traj_sw_crr_back_axis)
-    gph[1].invert_yaxis()
-    gph[1].axvline(x=0, c='k')
-    gph[1].axhline(y=0, c='k')
-    gph[1].set_title('back legs - corrected swing trajectory')
-    gph[1].set_xlabel('x (m)')
-    gph[1].set_ylabel('z (m)')
-    gph[1].grid()
-    fig.savefig('./plots/biorob_bounding_fwd_corrected_swing_trajectory.png')
+    fig.savefig('./plots/biorob_bounding_ip_toe_trajectory.png')
     # desired swing trajectory as it gets updated (modified and corrected)
     fig, gph = plt.subplots(3, 4, constrained_layout=True, figsize=(24, 12))
     gph[0, 0].plot(x_sw_d_front_axis, z_sw_d_front_axis)
@@ -632,16 +610,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph[2, 3].set_xlabel('t (s)')
     gph[2, 3].set_ylabel('vz (m/s)')
     gph[2, 3].grid()
-    fig.savefig('./plots/biorob_bounding_fwd_desired_swing_trajectory_simulation.png')
-    # average velocity of the toe w.r.t. the hip joint during stance periods
-    fig, gph = plt.subplots()
-    gph.plot(t_axis, v_avg_axis)
-    gph.axhline(y=-v_d, c='r')
-    gph.grid()
-    gph.set_title('average velocity (toe w.r.t. hip joint) during stance')
-    gph.set_xlabel('t (s)')
-    gph.set_ylabel('v (m/s)')
-    fig.savefig('./plots/biorob_bounding_fwd_v_avg.png')
+    fig.savefig('./plots/biorob_bounding_ip_desired_swing_trajectory_simulation.png')
     # evolution of stance time (the policy of updating t_st)
     fig, gph = plt.subplots()
     gph.plot(t_axis, t_st_front_axis)
@@ -651,15 +620,14 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     gph.set_xlabel('t (s)')
     gph.set_ylabel('t_st (s)')
     gph.legend(['front', 'back'])
-    fig.savefig('./plots/biorob_bounding_fwd_stance_time.png')
+    fig.savefig('./plots/biorob_bounding_ip_stance_time.png')
     return
 
 
-def plot_traj_sw(beta_sw_x, beta_sw_z, t_sw_array, x_traj_sw, z_traj_sw, vx_traj_sw, vz_traj_sw):
+def plot_traj_sw(t_sw_array, x_traj_sw, z_traj_sw, vx_traj_sw, vz_traj_sw):
     """
     Plot the desired original swing trajectory during one swing period.
     """
-    # swing trajectory
     fig, gph = plt.subplots(3, 2, constrained_layout=True, figsize=(12, 12))
     gph[0, 0].plot(x_traj_sw, z_traj_sw)
     gph[0, 0].invert_yaxis()
@@ -697,20 +665,7 @@ def plot_traj_sw(beta_sw_x, beta_sw_z, t_sw_array, x_traj_sw, z_traj_sw, vx_traj
     gph[2, 1].set_xlabel('t (s)')
     gph[2, 1].set_ylabel('vz (m/s)')
     gph[2, 1].grid()
-    fig.savefig('./plots/biorob_bounding_fwd_desired_original_swing_trajectory.png')
-    # swing trajectory with control points
-    fig, gph = plt.subplots()
-    gph.plot(x_traj_sw, z_traj_sw)
-    gph.invert_yaxis()
-    gph.axvline(x=0, c='k')
-    gph.axhline(y=0, c='k')
-    gph.axhline(y=beta_sw_z[0], c='k', linestyle='--')
-    gph.plot(beta_sw_x, beta_sw_z, 'r.', markersize=10)
-    gph.set_title('swing trajectory with control points')
-    gph.set_xlabel('x (m)')
-    gph.set_ylabel('z (m)')
-    gph.grid()
-    fig.savefig('./plots/biorob_bounding_fwd_desired_original_swing_trajectory_02.png')
+    fig.savefig('./plots/biorob_bounding_ip_desired_original_swing_trajectory.png')
     return
 
 
@@ -741,7 +696,7 @@ def plot_cnt(m, g, t_st_front_array, t_st_back_array, cnt_x_front, cnt_x_back, c
     gph[1, 1].set_title('back legs - z contact profile')
     gph[1, 1].set_xlabel('t (s)')
     gph[1, 1].set_ylabel('F (N)')
-    fig.savefig('./plots/biorob_bounding_fwd_contact_forces_stance.png')
+    fig.savefig('./plots/biorob_bounding_ip_contact_forces_stance.png')
     return
 
 
@@ -760,5 +715,5 @@ def plot_afb(t_st_front_array, t_st_back_array, afb_front, afb_back):
     gph[1].set_title('back legs - feedback activation')
     gph[1].set_xlabel('t (s)')
     gph[1].set_ylabel('feedback activation')
-    fig.savefig('./plots/biorob_bounding_fwd_activation_feedback_stance.png')
+    fig.savefig('./plots/biorob_bounding_ip_activation_feedback_stance.png')
     return
