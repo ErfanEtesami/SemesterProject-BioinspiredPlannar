@@ -6,7 +6,7 @@ def record_video():
     Record the simulation.
     """
     pb.startStateLogging(pb.STATE_LOGGING_VIDEO_MP4,
-                         fileName='./videos/biorob_bounding_fwd.mp4')
+                         fileName='./videos/solo_hopping.mp4')
     return
 
 

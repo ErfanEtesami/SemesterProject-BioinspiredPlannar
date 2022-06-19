@@ -127,7 +127,7 @@ def calc_fwd_kin_eqv(robot, q, vq):
 
 def calc_fwd_kin(robot, flag_fwd_kin, q, vq):
     """
-    Calculate the forward kinematics of the leg.
+    Calculate the forward kinematics of the pair (left and right) of legs.
     """
     if flag_fwd_kin == 0:       # direct forward kinematics
         x_l, vx_l, z_l, vz_l, jac_l = calc_fwd_kin_dir(robot, [q[0], q[1]], [vq[0], vq[1]])

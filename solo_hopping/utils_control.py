@@ -64,77 +64,36 @@ def clamp_x_force(force_x, force_z, mu):
     return force_x
 
 
-def calc_fwd_kin_dir(robot, q, vq):
+def calc_fwd_kin_leg(robot, q, vq):
     """
-    Calculate the direct forward kinematics of the leg.
+    Calculate the forward kinematics of the leg.
     """
     # modify angles' references
-    q0 = q[0] + np.pi/4
-    q2 = q[1] + np.pi/2
+    q0 = q[0]
+    q1 = q[1]
     vq0 = vq[0]
-    vq2 = vq[1]
+    vq1 = vq[1]
     # calculate x and vx of the toe w.r.t. the hip joint
-    x = (robot.l_thigh+robot.l_foot2)*np.cos(q0) + robot.l_calf*np.cos(q0+q2)
-    vx = -(robot.l_thigh+robot.l_foot2)*np.sin(q0)*vq0 + -robot.l_calf*np.sin(q0+q2)*(vq0+vq2)
+    x = robot.l_upper*np.sin(q0) + robot.l_lower*np.sin(q0+q1)
+    vx = robot.l_upper*np.cos(q0)*vq0 + robot.l_lower*np.cos(q0+q1)*(vq0+vq1)
     # calculate z and vz of the toe w.r.t. the hip joint
-    z = (robot.l_thigh+robot.l_foot2)*np.sin(q0) + robot.l_calf*np.sin(q0+q2)
-    vz = (robot.l_thigh+robot.l_foot2)*np.cos(q0)*vq0 + robot.l_calf*np.cos(q0+q2)*(vq0+vq2)
+    z = robot.l_upper*np.cos(q0) + robot.l_lower*np.cos(q0+q1)
+    vz = -robot.l_upper*np.sin(q0)*vq0 + -robot.l_lower*np.sin(q0+q1)*(vq0+vq1)
     # calculate the leg's jacobian
-    j_11 = -(robot.l_thigh+robot.l_foot2)*np.sin(q0) + -robot.l_calf*np.sin(q0+q2)
-    j_12 = -robot.l_calf*np.sin(q0+q2)
-    j_21 = (robot.l_thigh+robot.l_foot2)*np.cos(q0) + robot.l_calf*np.cos(q0+q2)
-    j_22 = robot.l_calf*np.cos(q0+q2)
+    j_11 = robot.l_upper*np.cos(q0) + robot.l_lower*np.cos(q0+q1)
+    j_12 = robot.l_lower*np.cos(q0+q1)
+    j_21 = -robot.l_upper*np.sin(q0) + -robot.l_lower*np.sin(q0+q1)
+    j_22 = -robot.l_lower*np.sin(q0+q1)
     jac = np.array([[j_11, j_12], [j_21, j_22]])
     return x, vx, z, vz, jac
 
 
-def calc_fwd_kin_eqv(robot, q, vq):
-    """
-    Calculate the equivalent forward kinematics of the leg.
-    """
-    # modify angles' references
-    q0 = q[0] + np.pi/4
-    q2 = q[1] + np.pi/2
-    q3 = q2
-    vq0 = vq[0]
-    vq2 = vq[1]
-    vq3 = vq2
-    # calculate equivalent leg length
-    l = np.sqrt(robot.l_calf**2 + robot.l_foot2**2 + 2*robot.l_calf*robot.l_foot2*np.cos(q3))
-    dl_dq3 = (-2*robot.l_calf*robot.l_foot2*np.sin(q3)) / (2*l)
-    dl_dt = dl_dq3 * vq3
-    # calculate alpha angle
-    u = (robot.l_foot2/l) * np.sin(np.pi-q3)
-    du_dq3 = -(robot.l_foot2/l)*np.cos(np.pi-q3) + -(robot.l_foot2/(l**2))*np.sin(np.pi-q3)*dl_dq3
-    du_dt = -(robot.l_foot2/l)*np.cos(np.pi-q3)*vq3 + -(robot.l_foot2/(l**2))*np.sin(np.pi-q3)*dl_dt
-    alpha = np.arcsin(u)
-    dalpha_dq3 = (1/np.sqrt(1-(u**2))) * du_dq3
-    dalpha_dt = (1/np.sqrt(1-(u**2))) * du_dt
-    # calculate x and vx of the toe w.r.t. the hip joint
-    x = robot.l_thigh*np.cos(q0) + l*np.cos(q0+q2-alpha)
-    vx = -robot.l_thigh*np.sin(q0)*vq0 + dl_dt*np.cos(q0+q2-alpha) + -l*np.sin(q0+q2-alpha)*(vq0+vq2-dalpha_dt)
-    # calculate z and vz of the toe w.r.t. the hip joint
-    z = robot.l_thigh*np.sin(q0) + l*np.sin(q0+q2-alpha)
-    vz = robot.l_thigh*np.cos(q0)*vq0 + dl_dt*np.sin(q0+q2-alpha) + l*np.cos(q0+q2-alpha)*(vq0+vq2-dalpha_dt)
-    # calculate the leg's jacobian
-    j_11 = -robot.l_thigh*np.sin(q0) + -l*np.sin(q0+q2-alpha)
-    j_12 = dl_dq3*np.cos(q0+q2-alpha) + -l*np.sin(q0+q2-alpha)*(1-dalpha_dq3)
-    j_21 = robot.l_thigh*np.cos(q0) + l*np.cos(q0+q2-alpha)
-    j_22 = dl_dq3*np.sin(q0+q2-alpha) + l*np.cos(q0+q2-alpha)*(1-dalpha_dq3)
-    jac = np.array([[j_11, j_12], [j_21, j_22]])
-    return x, vx, z, vz, jac
-
-
-def calc_fwd_kin(robot, flag_fwd_kin, q, vq):
+def calc_fwd_kin(robot, q, vq):
     """
     Calculate the forward kinematics of the pair (left and right) of legs.
     """
-    if flag_fwd_kin == 0:       # direct forward kinematics
-        x_l, vx_l, z_l, vz_l, jac_l = calc_fwd_kin_dir(robot, [q[0], q[1]], [vq[0], vq[1]])
-        x_r, vx_r, z_r, vz_r, jac_r = calc_fwd_kin_dir(robot, [q[2], q[3]], [vq[2], vq[3]])
-    elif flag_fwd_kin == 1:     # equivalent forward kinematics
-        x_l, vx_l, z_l, vz_l, jac_l = calc_fwd_kin_eqv(robot, [q[0], q[1]], [vq[0], vq[1]])
-        x_r, vx_r, z_r, vz_r, jac_r = calc_fwd_kin_eqv(robot, [q[2], q[3]], [vq[2], vq[3]])
+    x_l, vx_l, z_l, vz_l, jac_l = calc_fwd_kin_leg(robot, [q[0], q[1]], [vq[0], vq[1]])
+    x_r, vx_r, z_r, vz_r, jac_r = calc_fwd_kin_leg(robot, [q[2], q[3]], [vq[2], vq[3]])
     return x_l, vx_l, z_l, vz_l, jac_l, x_r, vx_r, z_r, vz_r, jac_r
 
 
@@ -194,16 +153,16 @@ def apply_torques(robot, mode_leg, torques):
     """
     if mode_leg == 1:       # front legs
         pb.setJointMotorControlArray(bodyUniqueId=robot.robot_id,
-                                     jointIndices=robot.front_joints,
+                                     jointIndices=robot.front_revolute_joints,
                                      controlMode=pb.TORQUE_CONTROL,
-                                     forces=[torques[0].item(), 0.0, torques[1].item(), 0.0,
-                                             torques[2].item(), 0.0, torques[3].item(), 0.0])
+                                     forces=[torques[0].item(), torques[1].item(),
+                                             torques[2].item(), torques[3].item()])
     elif mode_leg == 2:     # back legs
         pb.setJointMotorControlArray(bodyUniqueId=robot.robot_id,
-                                     jointIndices=robot.back_joints,
+                                     jointIndices=robot.back_revolute_joints,
                                      controlMode=pb.TORQUE_CONTROL,
-                                     forces=[torques[0].item(), 0.0, torques[1].item(), 0.0,
-                                             torques[2].item(), 0.0, torques[3].item(), 0.0])
+                                     forces=[torques[0].item(), torques[1].item(),
+                                             torques[2].item(), torques[3].item()])
     return
 
 

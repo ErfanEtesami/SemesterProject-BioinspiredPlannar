@@ -71,7 +71,7 @@ def draw_traj(x_fl_1, x_fl_2, z_fl_1, z_fl_2, x_fr_1, x_fr_2, z_fr_1, z_fr_2,
 
 def check_flags(flags):
     """
-    Check whether the input flags valid or not.
+    Check whether the input flags are valid or not.
     """
     for item in flags:
         if item not in [0, 1]:
