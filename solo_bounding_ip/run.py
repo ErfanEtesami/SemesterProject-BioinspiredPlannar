@@ -3,7 +3,7 @@ import pybullet as pb
 import pybullet_data
 import numpy as np
 import time
-import biorob_class as biorob_class
+import solo_class as solo_class
 import utils_verbose as verbose
 import utils_get_info as get_info
 import utils_gen_curves as gen_curves
@@ -68,7 +68,6 @@ flag_change_robot_dynamics = 1      # 1: change dynamics of the robot or not (0)
 flag_change_plane_dynamics = 1      # 1: change dynamics of the plane or not (0)
 flag_use_afb = 1                    # 1: use feedback activation such that F_z > 0 or not (0)
 flag_clamp_x_force = 0              # 1: clamp x force by |F_x| <= mu * |F_z| or not (0)
-flag_fwd_kin = 0                    # 0: use direct forward kinematics or the equivalent one (1)
 flag_update_t_st = 0                # 1: update stance time or not (0)
 flag_record_video = 1               # 1: record video or not (0)
 flag_draw_traj = 1                  # 1: draw trajectory in gui or not (0)
@@ -77,8 +76,8 @@ flag_slow_motion = 0                # 1: slow down the simulation or not (0)
 t_slow_motion = 10*1e-3
 # check flag inputs
 verbose.check_flags([flag_fix_base, flag_change_robot_dynamics, flag_change_plane_dynamics,
-                     flag_use_afb, flag_clamp_x_force, flag_fwd_kin, flag_update_t_st,
-                     flag_record_video, flag_draw_traj, flag_slow_motion])
+                     flag_use_afb, flag_clamp_x_force, flag_update_t_st, flag_record_video,
+                     flag_draw_traj, flag_slow_motion])
 # --- time constants --- #
 t_step = 1*1e-3             # PyBullet time step of simulation
 t_init = 1                  # initialization time for applying the initial configuration
@@ -86,8 +85,8 @@ nb_periods = 10             # number of simulation gait periods
 t_st = 0.110                # stance time
 t_sw = 0.220                # swing time
 # --- robot constants --- #
-m = 0.721791502953507 + 4*(0.0446567870646305+0.00360792918860103+0.0310372891847717+0.0364619323149185)    # 1.1848473
-lengths = [0.160, 0.143, 0.0639, 0.115]     # length of the thigh, calf, foot1, and foot2
+m = 1.43315091 + 4*(0.14853845+0.03070001+0.00693606)    # 2.17784899
+lengths = [0.160, 0.160]                    # length of the upper and lower parts of the leg
 l_base = 0.3892                             # length of the main body of the robot
 l_span = 0.57*l_base                        # stroke length
 g = 9.81                                    # gravity
@@ -100,11 +99,12 @@ rest_robot = 0.5
 mu = mu_plane * mu_robot
 # --- start and initial configuration --- #
 if flag_fix_base == 1:
-    start_pos = [0, 0, 0.30+0.1]
+    start_pos = [0, 0, 0.32+0.1]
 else:
-    start_pos = [0, 0, 0.30+0.02]
+    start_pos = [0, 0, 0.32+0.02]
 start_orn = [0, 0, 0]
-x_init = 0.00
+x_init_f = -0.005
+x_init_b = 0.005
 z_init = 0.25
 vx_init = 0
 vz_init = 0
@@ -115,53 +115,53 @@ wth_init = 0
 k_st = 0.1
 if flag_fix_base == 0:
     # initialization
-    kp_x_init = 100
-    kd_x_init = 5
-    kp_z_init = 100
-    kd_z_init = 5
+    kp_x_init = 200
+    kd_x_init = 10
+    kp_z_init = 200
+    kd_z_init = 10
     kp_th_init = 0
     kd_th_init = 0
     # stance
-    kp_x_st = 60
-    kd_x_st = 5
-    kp_z_st = 100
-    kd_z_st = 5
+    kp_x_st = 160
+    kd_x_st = 14
+    kp_z_st = 250
+    kd_z_st = 10
     kp_th_st = 0
     kd_th_st = 0
     # swing
-    kp_x_sw = 60
-    kd_x_sw = 5
-    kp_z_sw = 100
-    kd_z_sw = 5
+    kp_x_sw = 160
+    kd_x_sw = 14
+    kp_z_sw = 250
+    kd_z_sw = 10
     kp_th_sw = 0
     kd_th_sw = 0
 elif flag_fix_base == 1:
     # initialization
-    kp_x_init = 100
-    kd_x_init = 5
-    kp_z_init = 100
-    kd_z_init = 5
+    kp_x_init = 200
+    kd_x_init = 10
+    kp_z_init = 200
+    kd_z_init = 10
     kp_th_init = 0
     kd_th_init = 0
     # stance
     kp_x_st = 60
-    kd_x_st = 5
-    kp_z_st = 100
-    kd_z_st = 5
+    kd_x_st = 12
+    kp_z_st = 150
+    kd_z_st = 10
     kp_th_st = 0
     kd_th_st = 0
     # swing
     kp_x_sw = 60
-    kd_x_sw = 5
-    kp_z_sw = 100
-    kd_z_sw = 5
+    kd_x_sw = 12
+    kp_z_sw = 150
+    kd_z_sw = 10
     kp_th_sw = 0
     kd_th_sw = 0
 # --- temporal gait parameters --- #
 v_d = 0
 t_st_org = t_st
 x_st_d = 0.00
-z_st_d = 0.25
+z_st_d = 0.18
 th_st_d = 0.00
 vx_st_d = -v_d
 vz_st_d = 0.00
@@ -389,22 +389,22 @@ plane_id = pb.loadURDF(fileName='plane.urdf')
 if flag_record_video:
     verbose.record_video()
 # --- load the robot --- #
-robot = biorob_class.BioRob(plane_id=plane_id,
-                            m=m, g=g, lengths=lengths, l_base=l_base,
-                            mu_robot=mu_robot, rest_robot=rest_robot,
-                            mu_plane=mu_plane, rest_plane=rest_plane,
-                            kp_x_init=kp_x_init, kd_x_init=kd_x_init,
-                            kp_z_init=kp_z_init, kd_z_init=kd_z_init,
-                            kp_th_init=kp_th_init, kd_th_init=kd_th_init,
-                            kp_x_st=kp_x_st, kd_x_st=kd_x_st,
-                            kp_z_st=kp_z_st, kd_z_st=kd_z_st,
-                            kp_th_st=kp_th_st, kd_th_st=kd_th_st,
-                            kp_x_sw=kp_x_sw, kd_x_sw=kd_x_sw,
-                            kp_z_sw=kp_z_sw, kd_z_sw=kd_z_sw,
-                            kp_th_sw=kp_th_sw, kd_th_sw=kd_th_sw,
-                            k_st=k_st,
-                            start_pos=start_pos, start_orn=start_orn,
-                            flag_fix_base=flag_fix_base)
+robot = solo_class.Solo(plane_id=plane_id,
+                        m=m, g=g, lengths=lengths, l_base=l_base,
+                        mu_robot=mu_robot, rest_robot=rest_robot,
+                        mu_plane=mu_plane, rest_plane=rest_plane,
+                        kp_x_init=kp_x_init, kd_x_init=kd_x_init,
+                        kp_z_init=kp_z_init, kd_z_init=kd_z_init,
+                        kp_th_init=kp_th_init, kd_th_init=kd_th_init,
+                        kp_x_st=kp_x_st, kd_x_st=kd_x_st,
+                        kp_z_st=kp_z_st, kd_z_st=kd_z_st,
+                        kp_th_st=kp_th_st, kd_th_st=kd_th_st,
+                        kp_x_sw=kp_x_sw, kd_x_sw=kd_x_sw,
+                        kp_z_sw=kp_z_sw, kd_z_sw=kd_z_sw,
+                        kp_th_sw=kp_th_sw, kd_th_sw=kd_th_sw,
+                        k_st=k_st,
+                        start_pos=start_pos, start_orn=start_orn,
+                        flag_fix_base=flag_fix_base)
 # --- enable torque sensors in actuated joints --- #
 get_info.enable_torque_sensors(robot)
 # --- change plane and robot dynamics --- #
@@ -521,9 +521,9 @@ while True:
     q_front, vq_front = get_info.get_joint_states(robot, 1)
     q_back, vq_back = get_info.get_joint_states(robot, 2)
     x_fl, vx_fl, z_fl, vz_fl, jac_fl, x_fr, vx_fr, z_fr, vz_fr, jac_fr = \
-        control.calc_fwd_kin(robot, flag_fwd_kin, q_front, vq_front)
+        control.calc_fwd_kin(robot, q_front, vq_front)
     x_bl, vx_bl, z_bl, vz_bl, jac_bl, x_br, vx_br, z_br, vz_br, jac_br = \
-        control.calc_fwd_kin(robot, flag_fwd_kin, q_back, vq_back)
+        control.calc_fwd_kin(robot, q_back, vq_back)
     x_body_fl, z_body_fl, vx_body_fl, vz_body_fl = \
         get_info.calc_body_crds(robot, 1, x_fl, vx_fl, z_fl, vz_fl, th_com, wth_com)
     x_body_fr, z_body_fr, vx_body_fr, vz_body_fr = \
@@ -542,12 +542,12 @@ while True:
             control.apply_control(robot, 1, sm_front,
                   x_fl, z_fl, vx_fl, vz_fl, x_fr, z_fr, vx_fr, vz_fr, jac_fl, jac_fr, th_com, wth_com,
                   x_body_fl, x_body_fr, z_body_fl, z_body_fr,
-                  x_init, vx_init, z_init, vz_init, th_init, wth_init,
+                  x_init_f, vx_init, z_init, vz_init, th_init, wth_init,
                   cnt_x_fl, cnt_x_fr, cnt_z_fl, cnt_z_fr,
                   torque_sat, afb_f, mu, flag_clamp_x_force)
     elif t > t_init and sm_front == 1:              # front legs: switch to stance
         sm_front = 2
-    if t <= t_init and sm_back == 1:           # back legs
+    if t <= t_init+t_st and sm_back == 1:           # back legs
         fb_x_pd_bl, fb_x_p_bl, fb_x_d_bl, fb_z_pd_bl, fb_z_p_bl, fb_z_d_bl, fb_th_pd_bl, fb_th_p_bl, fb_th_d_bl, \
         fb_x_pd_br, fb_x_p_br, fb_x_d_br, fb_z_pd_br, fb_z_p_br, fb_z_d_br, fb_th_pd_br, fb_th_p_br, fb_th_d_br, \
         fb_tot_x_bl, fb_tot_z_bl, fb_tot_x_br, fb_tot_z_br, \
@@ -556,10 +556,10 @@ while True:
             control.apply_control(robot, 2, sm_back,
                                   x_bl, z_bl, vx_bl, vz_bl, x_br, z_br, vx_br, vz_br, jac_bl, jac_br, th_com, wth_com,
                                   x_body_bl, x_body_br, z_body_bl, z_body_br,
-                                  x_init, vx_init, z_init, vz_init, th_init, wth_init,
+                                  x_init_b, vx_init, z_init, vz_init, th_init, wth_init,
                                   cnt_x_bl, cnt_x_br, cnt_z_bl, cnt_z_br,
                                   torque_sat, afb_b, mu, flag_clamp_x_force)
-    elif t > t_init and sm_back == 1:     # back legs: switch to stance
+    elif t > t_init+t_st and sm_back == 1:     # back legs: switch to stance
         sm_back = 2
     # --- state machine of front legs --- #
     if sm_front == 2:                           # stance

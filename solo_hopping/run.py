@@ -3,7 +3,7 @@ import pybullet as pb
 import pybullet_data
 import numpy as np
 import time
-import biorob_class as biorob_class
+import solo_class as solo_class
 import utils_verbose as verbose
 import utils_get_info as get_info
 import utils_gen_curves as gen_curves
@@ -16,6 +16,7 @@ import utils_plot as plot
 # act: actuated
 # action: total force
 # afb: feedback activation
+# b: back
 # beta: Bezier control points
 # bl: back left
 # body_crds: relative coordinates of the CoM w.r.t. the toe
@@ -30,6 +31,7 @@ import utils_plot as plot
 # d: desired or derivative
 # dir: direct
 # eqv: equivalent
+# f: front
 # fb: feedback
 # fl: front left
 # fr: front right
@@ -101,7 +103,8 @@ if flag_fix_base == 1:
 else:
     start_pos = [0, 0, 0.32+0.02]
 start_orn = [0, 0, 0]
-x_init = 0.00
+x_init_f = -0.005
+x_init_b = 0.005
 z_init = 0.25
 vx_init = 0
 vz_init = 0
@@ -112,46 +115,46 @@ wth_init = 0
 k_st = 0.1
 if flag_fix_base == 0:
     # initialization
-    kp_x_init = 100
-    kd_x_init = 5
-    kp_z_init = 100
-    kd_z_init = 5
+    kp_x_init = 200
+    kd_x_init = 10
+    kp_z_init = 200
+    kd_z_init = 10
     kp_th_init = 0
     kd_th_init = 0
     # stance
     kp_x_st = 60
-    kd_x_st = 8
-    kp_z_st = 100
-    kd_z_st = 18
+    kd_x_st = 12
+    kp_z_st = 150
+    kd_z_st = 10
     kp_th_st = 0
     kd_th_st = 0
     # swing
     kp_x_sw = 60
-    kd_x_sw = 5
-    kp_z_sw = 100
-    kd_z_sw = 5
+    kd_x_sw = 12
+    kp_z_sw = 150
+    kd_z_sw = 10
     kp_th_sw = 0
     kd_th_sw = 0
 elif flag_fix_base == 1:
     # initialization
-    kp_x_init = 100
-    kd_x_init = 5
-    kp_z_init = 100
-    kd_z_init = 5
+    kp_x_init = 200
+    kd_x_init = 10
+    kp_z_init = 200
+    kd_z_init = 10
     kp_th_init = 0
     kd_th_init = 0
     # stance
     kp_x_st = 60
-    kd_x_st = 5
-    kp_z_st = 100
-    kd_z_st = 5
+    kd_x_st = 12
+    kp_z_st = 150
+    kd_z_st = 10
     kp_th_st = 0
     kd_th_st = 0
     # swing
     kp_x_sw = 60
-    kd_x_sw = 5
-    kp_z_sw = 100
-    kd_z_sw = 5
+    kd_x_sw = 12
+    kp_z_sw = 150
+    kd_z_sw = 10
     kp_th_sw = 0
     kd_th_sw = 0
 # --- temporal gait parameters --- #
@@ -386,22 +389,22 @@ plane_id = pb.loadURDF(fileName='plane.urdf')
 if flag_record_video:
     verbose.record_video()
 # --- load the robot --- #
-robot = biorob_class.BioRob(plane_id=plane_id,
-                            m=m, g=g, lengths=lengths, l_base=l_base,
-                            mu_robot=mu_robot, rest_robot=rest_robot,
-                            mu_plane=mu_plane, rest_plane=rest_plane,
-                            kp_x_init=kp_x_init, kd_x_init=kd_x_init,
-                            kp_z_init=kp_z_init, kd_z_init=kd_z_init,
-                            kp_th_init=kp_th_init, kd_th_init=kd_th_init,
-                            kp_x_st=kp_x_st, kd_x_st=kd_x_st,
-                            kp_z_st=kp_z_st, kd_z_st=kd_z_st,
-                            kp_th_st=kp_th_st, kd_th_st=kd_th_st,
-                            kp_x_sw=kp_x_sw, kd_x_sw=kd_x_sw,
-                            kp_z_sw=kp_z_sw, kd_z_sw=kd_z_sw,
-                            kp_th_sw=kp_th_sw, kd_th_sw=kd_th_sw,
-                            k_st=k_st,
-                            start_pos=start_pos, start_orn=start_orn,
-                            flag_fix_base=flag_fix_base)
+robot = solo_class.Solo(plane_id=plane_id,
+                        m=m, g=g, lengths=lengths, l_base=l_base,
+                        mu_robot=mu_robot, rest_robot=rest_robot,
+                        mu_plane=mu_plane, rest_plane=rest_plane,
+                        kp_x_init=kp_x_init, kd_x_init=kd_x_init,
+                        kp_z_init=kp_z_init, kd_z_init=kd_z_init,
+                        kp_th_init=kp_th_init, kd_th_init=kd_th_init,
+                        kp_x_st=kp_x_st, kd_x_st=kd_x_st,
+                        kp_z_st=kp_z_st, kd_z_st=kd_z_st,
+                        kp_th_st=kp_th_st, kd_th_st=kd_th_st,
+                        kp_x_sw=kp_x_sw, kd_x_sw=kd_x_sw,
+                        kp_z_sw=kp_z_sw, kd_z_sw=kd_z_sw,
+                        kp_th_sw=kp_th_sw, kd_th_sw=kd_th_sw,
+                        k_st=k_st,
+                        start_pos=start_pos, start_orn=start_orn,
+                        flag_fix_base=flag_fix_base)
 # --- enable torque sensors in actuated joints --- #
 get_info.enable_torque_sensors(robot)
 # --- change plane and robot dynamics --- #
@@ -518,9 +521,9 @@ while True:
     q_front, vq_front = get_info.get_joint_states(robot, 1)
     q_back, vq_back = get_info.get_joint_states(robot, 2)
     x_fl, vx_fl, z_fl, vz_fl, jac_fl, x_fr, vx_fr, z_fr, vz_fr, jac_fr = \
-        control.calc_fwd_kin(robot, flag_fwd_kin, q_front, vq_front)
+        control.calc_fwd_kin(robot, q_front, vq_front)
     x_bl, vx_bl, z_bl, vz_bl, jac_bl, x_br, vx_br, z_br, vz_br, jac_br = \
-        control.calc_fwd_kin(robot, flag_fwd_kin, q_back, vq_back)
+        control.calc_fwd_kin(robot, q_back, vq_back)
     x_body_fl, z_body_fl, vx_body_fl, vz_body_fl = \
         get_info.calc_body_crds(robot, 1, x_fl, vx_fl, z_fl, vz_fl, th_com, wth_com)
     x_body_fr, z_body_fr, vx_body_fr, vz_body_fr = \
@@ -539,7 +542,7 @@ while True:
             control.apply_control(robot, 1, sm_front,
                   x_fl, z_fl, vx_fl, vz_fl, x_fr, z_fr, vx_fr, vz_fr, jac_fl, jac_fr, th_com, wth_com,
                   x_body_fl, x_body_fr, z_body_fl, z_body_fr,
-                  x_init, vx_init, z_init, vz_init, th_init, wth_init,
+                  x_init_f, vx_init, z_init, vz_init, th_init, wth_init,
                   cnt_x_fl, cnt_x_fr, cnt_z_fl, cnt_z_fr,
                   torque_sat, afb_f, mu, flag_clamp_x_force)
     elif t > t_init and sm_front == 1:              # front legs: switch to stance
@@ -553,7 +556,7 @@ while True:
             control.apply_control(robot, 2, sm_back,
                                   x_bl, z_bl, vx_bl, vz_bl, x_br, z_br, vx_br, vz_br, jac_bl, jac_br, th_com, wth_com,
                                   x_body_bl, x_body_br, z_body_bl, z_body_br,
-                                  x_init, vx_init, z_init, vz_init, th_init, wth_init,
+                                  x_init_b, vx_init, z_init, vz_init, th_init, wth_init,
                                   cnt_x_bl, cnt_x_br, cnt_z_bl, cnt_z_br,
                                   torque_sat, afb_b, mu, flag_clamp_x_force)
     elif t > t_init and sm_back == 1:     # back legs: switch to stance

@@ -16,6 +16,7 @@ import utils_plot as plot
 # act: actuated
 # action: total force
 # afb: feedback activation
+# b: back
 # beta: Bezier control points
 # bl: back left
 # body_crds: relative coordinates of the CoM w.r.t. the toe
@@ -30,6 +31,7 @@ import utils_plot as plot
 # d: desired or derivative
 # dir: direct
 # eqv: equivalent
+# f: front
 # fb: feedback
 # fl: front left
 # fr: front right
