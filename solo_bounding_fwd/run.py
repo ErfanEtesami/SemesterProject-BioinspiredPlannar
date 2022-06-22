@@ -3,7 +3,7 @@ import pybullet as pb
 import pybullet_data
 import numpy as np
 import time
-import biorob_class as biorob_class
+import solo_class as solo_class
 import utils_verbose as verbose
 import utils_get_info as get_info
 import utils_gen_curves as gen_curves
@@ -124,16 +124,16 @@ if flag_fix_base == 0:
     kd_th_init = 0
     # stance
     kp_x_st = 0
-    kd_x_st = 10
-    kp_z_st = 150
-    kd_z_st = 5
-    kp_th_st = 5
-    kd_th_st = 0.2
+    kd_x_st = 12
+    kp_z_st = 250
+    kd_z_st = 10
+    kp_th_st = 0.0
+    kd_th_st = 0.0
     # swing
-    kp_x_sw = 100
-    kd_x_sw = 5
-    kp_z_sw = 100
-    kd_z_sw = 5
+    kp_x_sw = 150
+    kd_x_sw = 12
+    kp_z_sw = 250
+    kd_z_sw = 10
     kp_th_sw = 0
     kd_th_sw = 0
 elif flag_fix_base == 1:
@@ -146,24 +146,24 @@ elif flag_fix_base == 1:
     kd_th_init = 0
     # stance
     kp_x_st = 0
-    kd_x_st = 10
-    kp_z_st = 150
-    kd_z_st = 5
+    kd_x_st = 14
+    kp_z_st = 250
+    kd_z_st = 10
     kp_th_st = 0
     kd_th_st = 0
     # swing
-    kp_x_sw = 100
-    kd_x_sw = 5
-    kp_z_sw = 100
-    kd_z_sw = 5
+    kp_x_sw = 160
+    kd_x_sw = 14
+    kp_z_sw = 250
+    kd_z_sw = 10
     kp_th_sw = 0
     kd_th_sw = 0
 # --- temporal gait parameters --- #
 v_d = 1.5
 x_st_d = 0.00
-z_st_d = 0.25
+z_st_d = 0.18
 th_st_d = 0.00
-vx_st_d = -v_d
+vx_st_d = v_d
 vz_st_d = 0.00
 wth_st_d = 0.00
 t_st = l_span/v_d
@@ -220,8 +220,8 @@ elif flag_use_afb == 1:
                                   1*beta_afb_1, 1*beta_afb_2)
     plot.plot_afb(t_st_front_array, t_st_back_array, afb_front, afb_back)
 # --- generate swing original trajectory --- #
-beta_sw_x = np.array([-l_span/2, -0.144, -0.103, -0.213, 0.145,
-                      0.000, 0.138, 0.123, 0.124, l_span/2])
+beta_sw_x = -np.array([-l_span/2, -0.144, -0.103, -0.213, 0.145,
+                       0.000, 0.138, 0.123, 0.124, l_span/2])
 beta_sw_z = -np.array([-0.300, -0.270, -0.223, -0.120, -0.530,
                       0.000, -0.340, -0.223, -0.270, -0.300]) - (0.3-z_st_d)
 x_traj_sw_org = gen_curves.gen_traj_sw(t_sw, t_sw_array, beta_sw_x)
@@ -544,9 +544,9 @@ while True:
     q_front, vq_front = get_info.get_joint_states(robot, 1)
     q_back, vq_back = get_info.get_joint_states(robot, 2)
     x_fl, vx_fl, z_fl, vz_fl, jac_fl, x_fr, vx_fr, z_fr, vz_fr, jac_fr = \
-        control.calc_fwd_kin(robot, flag_fwd_kin, q_front, vq_front)
+        control.calc_fwd_kin(robot, q_front, vq_front)
     x_bl, vx_bl, z_bl, vz_bl, jac_bl, x_br, vx_br, z_br, vz_br, jac_br = \
-        control.calc_fwd_kin(robot, flag_fwd_kin, q_back, vq_back)
+        control.calc_fwd_kin(robot, q_back, vq_back)
     x_body_fl, z_body_fl, vx_body_fl, vz_body_fl = \
         get_info.calc_body_crds(robot, 1, x_fl, vx_fl, z_fl, vz_fl, th_com, wth_com)
     x_body_fr, z_body_fr, vx_body_fr, vz_body_fr = \
@@ -565,7 +565,7 @@ while True:
             control.apply_control(robot, 1, sm_front,
                   x_fl, z_fl, vx_fl, vz_fl, x_fr, z_fr, vx_fr, vz_fr, jac_fl, jac_fr, th_com, wth_com,
                   x_body_fl, x_body_fr, z_body_fl, z_body_fr,
-                  x_init, vx_init, z_init, vz_init, th_init, wth_init,
+                  x_init_f, vx_init, z_init, vz_init, th_init, wth_init,
                   cnt_x_fl, cnt_x_fr, cnt_z_fl, cnt_z_fr,
                   torque_sat, afb_f, mu, flag_clamp_x_force)
     elif t > t_init and sm_front == 1:              # front legs: switch to stance
@@ -579,7 +579,7 @@ while True:
             control.apply_control(robot, 2, sm_back,
                                   x_bl, z_bl, vx_bl, vz_bl, x_br, z_br, vx_br, vz_br, jac_bl, jac_br, th_com, wth_com,
                                   x_body_bl, x_body_br, z_body_bl, z_body_br,
-                                  x_init, vx_init, z_init, vz_init, th_init, wth_init,
+                                  x_init_b, vx_init, z_init, vz_init, th_init, wth_init,
                                   cnt_x_bl, cnt_x_br, cnt_z_bl, cnt_z_br,
                                   torque_sat, afb_b, mu, flag_clamp_x_force)
     elif t > t_init+t_st and sm_back == 1:     # back legs: switch to stance
@@ -697,7 +697,7 @@ while True:
         x_f = x_fl
         z_f = z_fl
         vx_f = vx_fl
-        beta_s_sw = [0, vx_f/(3*vx_traj_sw_org[0]), 1--v_d/(3*vx_traj_sw_org[-1]), 1]
+        beta_s_sw = [0, vx_f/(3*vx_traj_sw_org[0]), 1-v_d/(3*vx_traj_sw_org[-1]), 1]
         s_sw = gen_curves.gen_s_sw(t_sw, t_sw_array, beta_s_sw)
         x_traj_sw_mdf_front = gen_curves.gen_traj_sw_mdf(s_sw, beta_sw_x)
         z_traj_sw_mdf_front = gen_curves.gen_traj_sw_mdf(s_sw, beta_sw_z)
@@ -712,7 +712,7 @@ while True:
         x_f = x_bl
         z_f = z_bl
         vx_f = vx_bl
-        beta_s_sw = [0, vx_f/(3*vx_traj_sw_org[0]), 1--v_d/(3*vx_traj_sw_org[-1]), 1]
+        beta_s_sw = [0, vx_f/(3*vx_traj_sw_org[0]), 1-v_d/(3*vx_traj_sw_org[-1]), 1]
         s_sw = gen_curves.gen_s_sw(t_sw, t_sw_array, beta_s_sw)
         x_traj_sw_mdf_back = gen_curves.gen_traj_sw_mdf(s_sw, beta_sw_x)
         z_traj_sw_mdf_back = gen_curves.gen_traj_sw_mdf(s_sw, beta_sw_z)
