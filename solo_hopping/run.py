@@ -103,8 +103,9 @@ if flag_fix_base == 1:
 else:
     start_pos = [0, 0, 0.32+0.02]
 start_orn = [0, 0, 0]
+# solo legs should look like this: ><
 x_init_f = -0.005
-x_init_b = 0.005
+x_init_b = -x_init_f
 z_init = 0.25
 vx_init = 0
 vz_init = 0
