@@ -636,7 +636,7 @@ def plot_full(m, g, v_d, torque_sat, t_axis,
     # average velocity of the toe w.r.t. the hip joint during stance periods
     fig, gph = plt.subplots()
     gph.plot(t_axis, v_avg_axis)
-    gph.axhline(y=-v_d, c='r')
+    gph.axhline(y=v_d, c='r')
     gph.grid()
     gph.set_title('average velocity (toe w.r.t. hip joint) during stance')
     gph.set_xlabel('t (s)')
